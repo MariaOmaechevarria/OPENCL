@@ -1,3 +1,6 @@
+
+#KERNEL MULTIPLICACION MATRICES TILES
+
 MatrixMul_Local_Memory="""
 __kernel void MatrixMul_Local_Memory(int N,__global float* A, __global float* B, __global float* C, __local float* sh_A, __local float* sh_B) {
     // Obtener la información de los índices
@@ -43,6 +46,8 @@ __kernel void MatrixMul_Local_Memory(int N,__global float* A, __global float* B,
 """
 
 
+#KERNEL MULTIPLICACION MATRICES MEMORIA LOCAL A
+
 MatrixMul_kernel_localA_coallesced="""
     __kernel void MatrixMul_kernel_localA_coallesced(int dim,__global float *A,__global float *B,__global float *C,__local float *lA)
 {
@@ -71,7 +76,7 @@ MatrixMul_kernel_localA_coallesced="""
 
 
 
-
+#KERNEL MULTIPLICACION MATRICES BASICO
 
 MatrixMul_kernel1="""__kernel void MatrixMul_kernel1(int dim, __global int* A, __global int* B, __global int* C) {
     int fila = get_global_id(0);

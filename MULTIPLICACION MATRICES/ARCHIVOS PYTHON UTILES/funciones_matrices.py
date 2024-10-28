@@ -2,6 +2,12 @@ import numpy as np
 import pyopencl as cl
 
 
+'''
+FUNCIONES COMUNES 
+'''
+
+#FUNCION PREPRATIVOS ANTES DE CREAR KERNEL+ CREAR KERNEL
+
 def preparacion_kernel(device_type, kernel_code, kernel_name):
     # Plataforma y dispositivo
     platform = cl.get_platforms()[0]
@@ -20,16 +26,19 @@ def preparacion_kernel(device_type, kernel_code, kernel_name):
     return platform, device, context, command_queue, program, kernel
 
 
+# ESTABLECER ARGUMENTOS KERNEL
 def establecer_args_kernel(kernel, args):
     for i, arg in enumerate(args):
         kernel.set_arg(i, arg)
 
-
-# Ajustar el orden de los argumentos
+#EJECUTAR KERNEL
 def ejecutar_kernel(command_queue, kernel_filter, global_size, local_size):
     event = cl.enqueue_nd_range_kernel(command_queue, kernel_filter, global_size, local_size)
     event.wait()
     return event
+
+
+#CREA BUFFERS DE LAS MATRICES 
 
 def crear_buffers_matrices(A,B,context,dim):
     #Crear Buffers Matrices
@@ -40,6 +49,9 @@ def crear_buffers_matrices(A,B,context,dim):
     bufB = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=B)
     bufC = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, C.nbytes) 
     return bufA,bufB,bufC,C
+
+
+#DADO UN KERNEL, ESTABLECE ARGUMENTOS,LO EJECUTA Y DEVUELVE RESULTADOS
 
 def aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC):
     # Establecer argumentos del kernel
@@ -56,6 +68,12 @@ def aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, 
 
     return  exec_time,C
 
+
+'''
+FUNCIONES ESPECIFICAS PARA CADA TIPO DE KERNEL
+'''
+
+#FUNCION PARA REALIZAR MULTIPLICACION BASICA MATRICES
 
 def mult_mat_basica(dim,local_size,device_type,kernel_code,kernel_name,A,B):
 
@@ -74,6 +92,8 @@ def mult_mat_basica(dim,local_size,device_type,kernel_code,kernel_name,A,B):
     exec_time,C=aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC)
 
     return exec_time,C
+
+#FUNCION PARA REALIZAR MULTIPLICACION BASICA USANDO MEMORIA LOCAL PARA A
 
 def mult_mat_local(dim,local_size,device_type,kernel_code,kernel_name,A,B):
     platform, device, context, command_queue, program, kernel=preparacion_kernel(device_type, kernel_code, kernel_name)
@@ -101,6 +121,9 @@ def mult_mat_local(dim,local_size,device_type,kernel_code,kernel_name,A,B):
 
     return exec_time,C
 
+
+#FUNCION PARA REALIZAR MULTIPLICACION MATRICES USANDO MEMORIA LOCAL A Y B, TILES
+
 def mult_mat_local_tiles(dim,local_size,device_type,kernel_code,kernel_name,A,B):
     platform, device, context, command_queue, program, kernel=preparacion_kernel(device_type, kernel_code, kernel_name)
 
@@ -111,7 +134,7 @@ def mult_mat_local_tiles(dim,local_size,device_type,kernel_code,kernel_name,A,B)
     bufA,bufB,bufC,C=crear_buffers_matrices(A,B,context,dim)
 
     #Crear memoria local
-    # Tamaño de la memoria local (por ejemplo, para un bloque TILE_WIDTH x TILE_WIDTH)
+    
     local_mem_size = local_size[0] * local_size[1] * np.dtype(np.float32).itemsize
 
     # Crear buffers de memoria local para sh_A y sh_B
