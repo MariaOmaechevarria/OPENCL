@@ -3,7 +3,14 @@ import pyopencl as cl
 from PIL import Image
 import os
 import time
-# FUNCIONES PARA APLICAR FILTROS
+
+''' FUNCIONES PARA APLICAR FILTROS
+COMUNES A TODAS LAS FUNCIONES ESPECIFICAS POR KERNEL
+
+
+'''
+
+#FUNCION PARA PROCESAR IMAGEN, DEVUELVE LOS TAMAÑOS Y LAS IMAGENES IN Y OUT EN FORMATO NP
 
 def procesar_imagen(image_path):
     imagen = Image.open(image_path)
@@ -19,6 +26,9 @@ def procesar_imagen(image_path):
 
     return tam_x, tam_y, imagen_np, imagen_out_np
 
+
+#PREVIO AL KERNEL
+
 def pre_compilar_kernel(context, kernel_code, kernel_name):
     # Crear el programa con el código fuente del kernel
     program = cl.Program(context, kernel_code).build()
@@ -29,6 +39,7 @@ def pre_compilar_kernel(context, kernel_code, kernel_name):
     return kernel
 
 
+#PREPARACION DEL KERNEL, CREA EL KERNEL
 
 def preparacion_kernel(device_type, kernel_code, kernel_name):
     # Plataforma y dispositivo
@@ -47,18 +58,21 @@ def preparacion_kernel(device_type, kernel_code, kernel_name):
 
     return platform, device, context, command_queue, program, kernel
 
+#ESTABLECE ARGUMENTOS DEL KERNEL
+
 
 def establecer_args_kernel(kernel, args):
     for i, arg in enumerate(args):
         kernel.set_arg(i, arg)
 
+#EJECUTA EL KERNEL
 
-# Ajustar el orden de los argumentos
 def ejecutar_kernel(command_queue, kernel_filter, global_size, local_size):
     event = cl.enqueue_nd_range_kernel(command_queue, kernel_filter, global_size, local_size)
     event.wait()
     return event
 
+#PREPARACION FILTROS
 
 def pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size):
     # Procesar la imagen inicial y la final
@@ -76,6 +90,8 @@ def pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size):
 
     return context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue
 
+
+#FUNCION QUE APLICA EL FILTRO, DEVUELVE LA IMAGEN FINAL Y EL TIEMPO DE EJECUCION
 
 def aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_out_np, buffer_out):
     # Establecer argumentos del kernel
@@ -96,6 +112,13 @@ def aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, 
     return imagen_resultante, exec_time
 
 
+'''
+FUNCIONES QUE APLICAN DISTINTOS FILTROS COLOR SIN USAR MEMORIA LOCAL
+'''
+
+'''
+APLICA FILTRO COLOR
+'''
 
 
 def aplicar_filtro_color(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
@@ -115,6 +138,10 @@ def aplicar_filtro_color(image_path, filtro, kernel_code, kernel_name, device_ty
     imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
 
     return imagen_resultante, exec_time
+
+'''
+APLICA FILTRO COLOR EJECUTANDO EL KERNEL 1000 VECES
+'''
 
 
 def aplicar_filtro_color_100(image_path, filtro,kernel_code,kernel_name, device_type,local_size):
@@ -175,6 +202,10 @@ def aplicar_filtro_color_100(image_path, filtro,kernel_code,kernel_name, device_
     return imagen_resultante, avg_time
 
 
+'''
+APLICA FILTRO COLOR DE CUALQUIER TAMAÑO EL FILTRO, NO NECESARIAMENTE CUADRADO
+'''
+
 def aplicar_filtro_color_cualquiera(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
     # Obtener las estructuras necesarias para ejecutar el kernel de filtros
     context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
@@ -191,6 +222,10 @@ def aplicar_filtro_color_cualquiera(image_path, filtro, kernel_code, kernel_name
     imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
 
     return imagen_resultante, exec_time
+
+'''
+APLICA EL FILTRO DIVIDIO, PRIMERO HORIZONTAL LUEGO VERTICAL
+'''
 
 def aplicar_filtro_color_dividido(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
     filtroX, filtroY = filtro
@@ -226,6 +261,10 @@ def aplicar_filtro_color_dividido(image_path, filtro, kernel_code, kernel_name, 
     return imagen_out, (exec_timeX + exec_timeY)
 
 
+'''
+APLICA FILTRO MEDIAN: NO NECESITA FILTRO, SE HACE LA MEDIANA DE LOS VALROES
+'''
+
 def aplicar_filtro_median(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
     # Obtener las estructuras necesarias para ejecutar el kernel de filtros
     context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
@@ -240,6 +279,9 @@ def aplicar_filtro_median(image_path, filtro, kernel_code, kernel_name, device_t
 
     return imagen_resultante, exec_time
 
+'''
+APLICA EL FILTRO SOBEL, NECESITA DOS FILTROS
+'''
 
 def aplicar_filtro_sobel(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
     # Obtener las estructuras necesarias para ejecutar el kernel de filtros
@@ -262,6 +304,12 @@ def aplicar_filtro_sobel(image_path, filtro, kernel_code, kernel_name, device_ty
 
     return imagen_resultante, exec_time
 
+'''
+FUNCIONES QUE APLICAN DISTINTOS FILTROS COLOR USANDO MEMORIA LOCAL
+'''
+
+
+#Aplica filtro usando la memoria local
 
 def aplicar_filtro_local(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
     # Procesar la imagen inicial y la final
@@ -292,6 +340,8 @@ def aplicar_filtro_local(image_path, filtro, kernel_code, kernel_name, device_ty
 
     return imagen_resultante, exec_time
 
+
+#Aplica filtro usando la memoria local para filtro de cualquier tamaño, no necesariamente cuadrado
 
 def aplicar_filtro_local_cualquiera(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
     # Procesar la imagen inicial y la final
@@ -324,6 +374,9 @@ def aplicar_filtro_local_cualquiera(image_path, filtro, kernel_code, kernel_name
 
     return imagen_resultante, exec_time
 
+
+#Aplicar filtro en memoria local por bloques ---> NO SE USA
+
 def aplicar_filtro_local_bloques(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
     # Procesar la imagen inicial y la final
     tam_x, tam_y, imagen_np, imagen_np_out = procesar_imagen(image_path)
@@ -352,6 +405,9 @@ def aplicar_filtro_local_bloques(image_path, filtro, kernel_code, kernel_name, d
     imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
 
     return imagen_resultante, exec_time
+
+
+#APLICA FILTRO MEMORIA LOCAL DIVIDIDO, PRIMERO FILTRO HORIZONTAL LUEGO VERTICAL
 
 def aplicar_filtro_local_dividido(image_path,filtro,kernel_code, kernel_name, device_type, local_size):
    filtroX,filtroY=filtro

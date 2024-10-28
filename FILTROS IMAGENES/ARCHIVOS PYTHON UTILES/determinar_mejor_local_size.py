@@ -1,8 +1,11 @@
 import math
 
 # FUNCIÓN QUE DETERMINA EL MEJOR LOCAL SIZE
+
+
+#FACTORIZAR, DEVUELVE UNA LISTA CON TODOS LOS FACTORES
 def factorizar(n):
-    """Retorna una lista de tuplas con los factores de n."""
+    
     factores = []
     for i in range(1, int(math.sqrt(n)) + 1):
         if n % i == 0:

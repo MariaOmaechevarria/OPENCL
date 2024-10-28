@@ -94,6 +94,9 @@ __kernel void kernel_filter_color(__global uchar* imagen_in,__global uchar* imag
     }
 }
 """
+
+#KERNEL A COLOR PARA FILTROS RECTANGULARES
+
 kernel_filter_color_rectangular="""
 __kernel void kernel_filter_color_rectangular(__global uchar* imagen_in,
                                    __global uchar* imagen_out,
@@ -160,6 +163,7 @@ __kernel void kernel_filter_color_rectangular(__global uchar* imagen_in,
 """
 
 #KERNEL FILTRO SOBEL
+
 kernel_filter_color_sobel="""
 __kernel void kernel_filter_color_sobel(__global uchar* imagen_in,__global uchar* imagen_out,__constant float* filtro_X,__constant float* filtro_Y,int dim,int ancho,int alto){
 
@@ -234,7 +238,7 @@ __kernel void kernel_filter_color_sobel(__global uchar* imagen_in,__global uchar
 }
 """
 
-#KERNEL FILTRO MEDIO:
+#KERNEL FILTRO MEDIAN:
 
 kernel_median="""
 __kernel void kernel_median(__global uchar* imagen_in, __global uchar* imagen_out, int dim, int ancho, int alto) {
@@ -505,100 +509,10 @@ __kernel void kernel_filter_color_local2(
     }
 }
 """
-kernel_filter_color_local_rectangular="""
-__kernel void kernel_filter_color_local_rectangular(
-    __global uchar* imagen_in, 
-    __global uchar* imagen_out, 
-    __constant float* filtro, 
-    int dim_x,      // Ancho del filtro
-    int dim_y,      // Alto del filtro
-    int ancho, 
-    int alto, 
-    __local uchar* local_imagen) 
-{   
-    // Posición del pixel global
-    int fila = get_global_id(0);
-    int columna = get_global_id(1);
-    
-    int halo_x = (dim_x - 1) / 2;
-    int halo_y = (dim_y - 1) / 2;
-
-    // IDs locales
-    int local_fila = get_local_id(0);
-    int local_columna = get_local_id(1);
-    
-    // Tamaño del grupo de trabajo
-    int local_size_x = get_local_size(0);
-    int local_size_y = get_local_size(1);
-    
-    // Dimensiones de la región local con bordes (halo)
-    int local_dim_x = local_size_x + 2 * halo_y;
-    int local_dim_y = local_size_y + 2 * halo_x;
-
-    // Cargar píxeles en memoria local
-    for (int i = local_fila; i < local_dim_x; i += local_size_x) {
-        for (int j = local_columna; j < local_dim_y; j += local_size_y) {
-            int img_fila = fila - halo_y + i;
-            int img_columna = columna - halo_x + j;
-
-            // Índice en la memoria local
-            int local_idx = (i * local_dim_y + j) * 3;
-
-            // Manejo de bordes
-            if (img_fila >= 0 && img_fila < alto && img_columna >= 0 && img_columna < ancho) {
-                int img_idx = (img_fila * ancho + img_columna) * 3;
-                local_imagen[local_idx] = imagen_in[img_idx];
-                local_imagen[local_idx + 1] = imagen_in[img_idx + 1];
-                local_imagen[local_idx + 2] = imagen_in[img_idx + 2];
-            } else {
-                // Inicializar píxeles fuera de los límites con 0
-                local_imagen[local_idx] = 0;
-                local_imagen[local_idx + 1] = 0;
-                local_imagen[local_idx + 1] = 0;
-            }
-        }
-    }
-
-    // Sincronizar todas las hebras
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    // Aplicar el filtro solo si estamos dentro de los límites de la imagen original
-    if (fila >= halo_y && fila < (alto - halo_y) && columna >= halo_x && columna < (ancho - halo_x)) {
-        float suma_rojo = 0.0f;
-        float suma_verde = 0.0f;
-        float suma_azul = 0.0f;
-
-        // Aplicar el filtro convolucional
-        for (int i = 0; i < dim_y; i++) {  // Recorre alto
-            for (int j = 0; j < dim_x; j++) {  // Recorre ancho
-                int local_i = local_fila + i;
-                int local_j = local_columna + j;
-
-                int local_idx = (local_i * local_dim_y + local_j) * 3;
-
-                suma_rojo += (float)local_imagen[local_idx] * filtro[i * dim_x + j];
-                suma_verde += (float)local_imagen[local_idx + 1] * filtro[i * dim_x + j];
-                suma_azul += (float)local_imagen[local_idx + 2] * filtro[i * dim_x + j];
-            }
-        }
-
-        // Escribir el resultado en la imagen de salida
-        int idx_out = (fila * ancho + columna) * 3;
-        imagen_out[idx_out]     = (uchar)clamp(suma_rojo, 0.0f, 255.0f);
-        imagen_out[idx_out + 1] = (uchar)clamp(suma_verde, 0.0f, 255.0f);
-        imagen_out[idx_out + 2] = (uchar)clamp(suma_azul, 0.0f, 255.0f);
-    } else {
-        // Manejo de bordes: copiar el píxel sin aplicar filtro
-        int idx_out = (fila * ancho + columna) * 3;
-        imagen_out[idx_out]     = imagen_in[idx_out];
-        imagen_out[idx_out + 1] = imagen_in[idx_out + 1];
-        imagen_out[idx_out + 2] = imagen_in[idx_out + 2];
-    }
-}
 
 
 
-"""
+#KERNEL FILTER MEMORIA LOCAL TRABAJO DIVIDIDO ENTRE HEBRAS
 
 kernel_filter_color_local3 = """__kernel void kernel_filter_color_local3(
     __global uchar* imagen_in, 
@@ -691,6 +605,7 @@ kernel_filter_color_local3 = """__kernel void kernel_filter_color_local3(
     }
 }
 """
+#KERNEL FILTER MEMORIA LOCAL TRABAJO DIVIDIDO ENTRE HEBRAS DONDE SE GUARADN RGB A LA VEZ
 
 kernel_filter_color_local4 = """__kernel void kernel_filter_color_local4(
     __global uchar* imagen_in, 
@@ -792,4 +707,98 @@ kernel_filter_color_local4 = """__kernel void kernel_filter_color_local4(
 }
 """
 
+#KERNEL FILTRO MEMORIA LOCAL PARA FILTROS RECTANGULARES (IGUAL QUE KERNEL LOCAL3)
+kernel_filter_color_local_rectangular="""
+__kernel void kernel_filter_color_local_rectangular(
+    __global uchar* imagen_in, 
+    __global uchar* imagen_out, 
+    __constant float* filtro, 
+    int dim_x,      // Ancho del filtro
+    int dim_y,      // Alto del filtro
+    int ancho, 
+    int alto, 
+    __local uchar* local_imagen) 
+{   
+    // Posición del pixel global
+    int fila = get_global_id(0);
+    int columna = get_global_id(1);
+    
+    int halo_x = (dim_x - 1) / 2;
+    int halo_y = (dim_y - 1) / 2;
 
+    // IDs locales
+    int local_fila = get_local_id(0);
+    int local_columna = get_local_id(1);
+    
+    // Tamaño del grupo de trabajo
+    int local_size_x = get_local_size(0);
+    int local_size_y = get_local_size(1);
+    
+    // Dimensiones de la región local con bordes (halo)
+    int local_dim_x = local_size_x + 2 * halo_y;
+    int local_dim_y = local_size_y + 2 * halo_x;
+
+    // Cargar píxeles en memoria local
+    for (int i = local_fila; i < local_dim_x; i += local_size_x) {
+        for (int j = local_columna; j < local_dim_y; j += local_size_y) {
+            int img_fila = fila - halo_y + i;
+            int img_columna = columna - halo_x + j;
+
+            // Índice en la memoria local
+            int local_idx = (i * local_dim_y + j) * 3;
+
+            // Manejo de bordes
+            if (img_fila >= 0 && img_fila < alto && img_columna >= 0 && img_columna < ancho) {
+                int img_idx = (img_fila * ancho + img_columna) * 3;
+                local_imagen[local_idx] = imagen_in[img_idx];
+                local_imagen[local_idx + 1] = imagen_in[img_idx + 1];
+                local_imagen[local_idx + 2] = imagen_in[img_idx + 2];
+            } else {
+                // Inicializar píxeles fuera de los límites con 0
+                local_imagen[local_idx] = 0;
+                local_imagen[local_idx + 1] = 0;
+                local_imagen[local_idx + 1] = 0;
+            }
+        }
+    }
+
+    // Sincronizar todas las hebras
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // Aplicar el filtro solo si estamos dentro de los límites de la imagen original
+    if (fila >= halo_y && fila < (alto - halo_y) && columna >= halo_x && columna < (ancho - halo_x)) {
+        float suma_rojo = 0.0f;
+        float suma_verde = 0.0f;
+        float suma_azul = 0.0f;
+
+        // Aplicar el filtro convolucional
+        for (int i = 0; i < dim_y; i++) {  // Recorre alto
+            for (int j = 0; j < dim_x; j++) {  // Recorre ancho
+                int local_i = local_fila + i;
+                int local_j = local_columna + j;
+
+                int local_idx = (local_i * local_dim_y + local_j) * 3;
+
+                suma_rojo += (float)local_imagen[local_idx] * filtro[i * dim_x + j];
+                suma_verde += (float)local_imagen[local_idx + 1] * filtro[i * dim_x + j];
+                suma_azul += (float)local_imagen[local_idx + 2] * filtro[i * dim_x + j];
+            }
+        }
+
+        // Escribir el resultado en la imagen de salida
+        int idx_out = (fila * ancho + columna) * 3;
+        imagen_out[idx_out]     = (uchar)clamp(suma_rojo, 0.0f, 255.0f);
+        imagen_out[idx_out + 1] = (uchar)clamp(suma_verde, 0.0f, 255.0f);
+        imagen_out[idx_out + 2] = (uchar)clamp(suma_azul, 0.0f, 255.0f);
+    } else {
+        // Manejo de bordes: copiar el píxel sin aplicar filtro
+        int idx_out = (fila * ancho + columna) * 3;
+        imagen_out[idx_out]     = imagen_in[idx_out];
+        imagen_out[idx_out + 1] = imagen_in[idx_out + 1];
+        imagen_out[idx_out + 2] = imagen_in[idx_out + 2];
+    }
+}
+
+
+
+"""
