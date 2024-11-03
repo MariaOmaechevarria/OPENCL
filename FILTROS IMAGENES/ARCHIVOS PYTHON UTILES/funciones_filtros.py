@@ -240,25 +240,47 @@ def aplicar_filtro_color_dividido(image_path, filtro, kernel_code, kernel_name, 
         local_size
     )
 
-    # Guardar imagen intermedia
-    path = 'C:/Users/Eevee/Documents/OPENCL TFG IMP/FILTROS IMAGENES/IMAGENES INTERMEDIAS/imagen_intermedia_prueba.png'
-    # Crear directorio si no existe
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    #Aplicar Filtro Vertical
+
+     # Convertirla a un array de tres canales
+    imagen_np = np.array(imagen_in).astype(np.uint8)
+
+    # Dimensiones de la imagen
+    tam_x, tam_y, _ = imagen_np.shape
+
+    # Crear array para la imagen final
+    imagen_np_out = np.empty_like(imagen_np)
+
+    # Plataforma y dispositivo
+    platform = cl.get_platforms()[0]
+    device = platform.get_devices(device_type=device_type)[0]
+
+    # Crear contexto y cola de comandos
+    context = cl.Context([device])
+    command_queue = cl.CommandQueue(context, device=device, properties=cl.command_queue_properties.PROFILING_ENABLE)
+
+    # Crear el programa y compilarlo
+    program = cl.Program(context, kernel_code).build()
+
+    # Crear el kernel
+    kernel = cl.Kernel(program, kernel_name)
+
     
-    # Guardar la imagen intermedia (puedes necesitar ajustar esto según tu implementación)
-    imagen_in.save(path)
+    # Crear buffers
+    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtroY)
+    buffer_in = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=imagen_np)
+    buffer_out = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, imagen_np.nbytes)
 
-    # Aplicar filtro vertical
-    imagen_out, exec_timeY = aplicar_filtro_color_cualquiera(
-        path, 
-        filtroY, 
-        kernel_code, 
-        kernel_name, 
-        device_type, 
-        local_size
-    )
+    # Establecer global_size
+    global_size = (tam_x, tam_y)
 
-    return imagen_out, (exec_timeX + exec_timeY)
+    # Argumentos del kernel
+
+    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtroY.shape[1]),np.int32(filtroY.shape[0]), np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0])]
+
+    imagen_resultante, exec_timeY = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
+
+    return imagen_resultante, (exec_timeX + exec_timeY)
 
 
 '''
@@ -375,55 +397,71 @@ def aplicar_filtro_local_cualquiera(image_path, filtro, kernel_code, kernel_name
     return imagen_resultante, exec_time
 
 
-#Aplicar filtro en memoria local por bloques ---> NO SE USA
 
-def aplicar_filtro_local_bloques(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
-    # Procesar la imagen inicial y la final
-    tam_x, tam_y, imagen_np, imagen_np_out = procesar_imagen(image_path)
-
-    # Establecer global_size
-    global_size = (tam_x, tam_y)
-
-    # Preparación del kernel
-    context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
-
-    # Crear buffer para el filtro
-    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtro)
-
-    #Crear memoria local
-    dim=filtro.shape[0]
-    centro = (dim - 1) // 2
-    local_size_x, local_size_y = local_size
-    local_mem_size = (local_size_x + 2 * centro) * (local_size_y + 2 * centro) * 4  # 3 es por los canales R, G, B
-
-    # Define la memoria local
-    local_mem = cl.LocalMemory(local_mem_size)
-
-    # Argumentos del kernel (sin inicializar local_mem aquí)
-    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtro.shape[0]), np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0]), local_mem]
-
-    imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
-
-    return imagen_resultante, exec_time
 
 
 #APLICA FILTRO MEMORIA LOCAL DIVIDIDO, PRIMERO FILTRO HORIZONTAL LUEGO VERTICAL
 
 def aplicar_filtro_local_dividido(image_path,filtro,kernel_code, kernel_name, device_type, local_size):
-   filtroX,filtroY=filtro
-   
-   #Aplicar filtro horizontal
-   imagen_in,exec_timeX=aplicar_filtro_local_cualquiera(image_path, filtroX, kernel_code, kernel_name, device_type, local_size)
+    filtroX,filtroY=filtro
+    
+    #Aplicar filtro horizontal
+    imagen_in,exec_timeX=aplicar_filtro_local_cualquiera(image_path, filtroX, kernel_code, kernel_name, device_type, local_size)
 
-   #Guardar imagen intermedia
-   path='C:/Users/Eevee/Documents/OPENCL TFG IMP/FILTROS IMAGENES/IMAGENES INTERMEDIAS/imagen_intermedia_prueba.png'
-   # Crear directorio si no existe
-   os.makedirs(os.path.dirname(path), exist_ok=True)
-   imagen_in.save(path)
+    #Aplicar Filtro Vertical
 
-   #Aplicar filtro vertical
-   imagen_out,exec_timeY=aplicar_filtro_local_cualquiera(path, filtroY, kernel_code, kernel_name, device_type, local_size)
+        # Convertirla a un array de tres canales
+    imagen_np = np.array(imagen_in).astype(np.uint8)
 
-   return imagen_out,(exec_timeX+exec_timeY)
+        # Dimensiones de la imagen
+    tam_x, tam_y, _ = imagen_np.shape
+
+        # Crear array para la imagen final
+    imagen_np_out = np.empty_like(imagen_np)
+
+    # Plataforma y dispositivo
+    platform = cl.get_platforms()[0]
+    device = platform.get_devices(device_type=device_type)[0]
+
+    # Crear contexto y cola de comandos
+    context = cl.Context([device])
+    command_queue = cl.CommandQueue(context, device=device, properties=cl.command_queue_properties.PROFILING_ENABLE)
+
+    # Crear el programa y compilarlo
+    program = cl.Program(context, kernel_code).build()
+
+    # Crear el kernel
+    kernel = cl.Kernel(program, kernel_name)
+    
+    #Crear memoria local
+    dimY=filtroY.shape[0]
+    dimX=filtroY.shape[1]
+    centroX = (dimX - 1) // 2
+    centroY = (dimY - 1) // 2
+    local_size_x, local_size_y = local_size
+    local_mem_size = (local_size_x + 2 * centroY) * (local_size_y + 2 * centroX) * 3  # 3 es por los canales R, G, B
+
+    # Define la memoria local
+    local_mem = cl.LocalMemory(local_mem_size)
+
+
+    # Crear buffers
+    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtroY)
+    buffer_in = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=imagen_np)
+    buffer_out = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, imagen_np.nbytes)
+
+    # Establecer global_size
+    global_size = (tam_x, tam_y)
+
+    # Argumentos del kernel
+
+     # Argumentos del kernel (sin inicializar local_mem aquí)
+    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtroY.shape[1]), np.int32(filtroY.shape[0]),np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0]), local_mem]
+
+    imagen_resultante, exec_timeY = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
+    
+
+
+    return imagen_resultante,(exec_timeX+exec_timeY)
 
 
