@@ -286,13 +286,7 @@ def experimento_kernels(lista_kernels, lista_nombres_kernels, lista_funciones, d
 #FUNCION PARA GRAFICAR DISTINTOS KERNELS. EJE X DIMENSIONES MATRICES. EJE Y TIEMPOS. CADA KERNEL ES UNA LINEA
 
 def graficar_tiempos_ejecucion_kernels(df, save_path=None):
-    """
-    Función para graficar los tiempos de ejecución de diferentes kernels para diferentes dimensiones.
-    
-    Parámetros:
-    df (DataFrame): Un DataFrame con las dimensiones de las matrices y los tiempos de ejecución para cada kernel.
-    save_path (str, optional): Ruta para guardar el gráfico. Si es None, se mostrará el gráfico.
-    """
+
     # Crear el gráfico
     plt.figure(figsize=(10, 6))
 
