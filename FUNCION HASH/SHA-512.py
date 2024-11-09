@@ -61,7 +61,7 @@ __kernel void kernel_SHA512(__global const ulong *message,
                              __global ulong *hash, 
                              int num_blocks, __global ulong *bufferValores, __global ulong *K) {
 
-    int block_id = get_global_id(0);
+    //int block_id = get_global_id(0);
     
     
     for (int i = 0; i < num_blocks; i++) {
@@ -197,7 +197,7 @@ def SHA512(mensaje, device_type, kernel_code, kernel_name):
 
     return exec_time, hash_concatenado
 
-mensaje = 'shhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh'
+mensaje = 'deeg0'
 device_type = cl.device_type.GPU
 kernel_code = kernel_SHA512
 kernel_name = "kernel_SHA512"
