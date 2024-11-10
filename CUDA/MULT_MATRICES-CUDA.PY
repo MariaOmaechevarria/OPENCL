@@ -47,16 +47,20 @@ cuda.memcpy_htod(C_gpu, C)
 
 # Ejecutar kernel y medir tiempo
 start = time.time()
-kernel(np.int32(dim), A_gpu, B_gpu, C_gpu, block=(8, 8), grid=(8, 8))
+# The block argument needs to be a 3-tuple. 
+# Since you are launching a 2D grid of 2D blocks, 
+# you should set the z-dimension of the block to 1.
+kernel(np.int32(dim), A_gpu, B_gpu, C_gpu, block=(8, 8, 1), grid=(8, 8))  
 cuda.Context.synchronize()  # Asegurarse de que el kernel ha terminado
 end = time.time()
 
+print(A,B)
 # Copiar resultados de C
 cuda.memcpy_dtoh(C, C_gpu)
+print(C)
 
 # Mostrar el tiempo de ejecución
 print(f"Tiempo de ejecución del kernel: {end - start:.6f} segundos")
 
 # Limpiar
 context.pop()
-
