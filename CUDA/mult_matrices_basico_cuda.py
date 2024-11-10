@@ -21,7 +21,7 @@ __global__ void MatrixMul_kernel(int dim, float* A, float* B, float* C) {
 }
 """
 
-def ejecutar_kernel(block,grid):
+def ejecutar_kernel(dim,A,B,block,grid):
 
     # Inicializar CUDA
     cuda.init()
@@ -32,9 +32,7 @@ def ejecutar_kernel(block,grid):
     kernel = mod.get_function("MatrixMul_kernel")
 
     # Crear A, B, C
-    dim = 64
-    A = np.random.rand(dim, dim).astype(np.float32)
-    B = np.random.rand(dim, dim).astype(np.float32)
+
     C = np.zeros((dim, dim), dtype=np.float32)
 
     # Transferir datos a la GPU
