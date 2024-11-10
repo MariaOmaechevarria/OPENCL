@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 import struct
-import kernel_mining
+
 
 kernel_mining ="""
  __constant uint H[8] = { 
