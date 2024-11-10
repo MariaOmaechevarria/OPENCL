@@ -17,12 +17,6 @@ def proof_of_work(header, difficulty_bits):
     print("Failed after %d tries" % nonce)
     return nonce
 
-import numpy as np
-
-hash_result = hashlib.sha256((str("abc10") ).encode()).hexdigest()
-target=np.uint64(0x00FFFFFFFFFFFFFFFF)
-print( int(hash_result, 16) < target)
-print(hash_result)
 
 if __name__ == '__main__':
     nonce = 0
