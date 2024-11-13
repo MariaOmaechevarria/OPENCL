@@ -4,7 +4,7 @@ import pyopencl as cl
 import os
 import pandas as pd
 
-MatrixMul_kernel1="""__kernel void MatrixMul_kernel1(int dim, __global int* A, __global int* B, __global int* C) {
+MatrixMul_kernel1="""__kernel void MatrixMul_kernel1(int dim, __global float* A, __global float* B, __global float* C) {
     int fila = get_global_id(0);
     int columna = get_global_id(1);
 
@@ -54,7 +54,7 @@ def ejecutar_kernel(command_queue, kernel_filter, global_size, local_size):
 
 def crear_buffers_matrices(A,B,context,dim):
     #Crear Buffers Matrices
-    C = np.zeros((dim, dim), dtype=np.int32)
+    C = np.zeros((dim, dim), dtype=np.float32)
 
     # Crear Buffers
     bufA = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=A)
@@ -107,28 +107,3 @@ def mult_mat_basica(dim,local_size,device_type,kernel_code,kernel_name,A,B):
 
 
 
-def guardar_dataframes_excel(resultados,base_save_dir):
-   
-    # Crear la estructura de directorios si no existe
-    funcion_dir = base_save_dir
-    os.makedirs(funcion_dir, exist_ok=True)
-    
-    # Definir la ruta completa del archivo Excel
-    excel_save_path = os.path.join(funcion_dir, 'resultados.xlsx')
-    
-    # Usar xlsxwriter como motor para formatear las celdas durante la escritura
-    with pd.ExcelWriter(excel_save_path, engine='xlsxwriter') as writer:
-        # Guardar los DataFrames en hojas separadas
-        resultados.to_excel(writer, sheet_name='Resultados', index=True)
-       
-        # Acceder al workbook y crear un formato para números con 6 decimales
-        workbook = writer.book
-        float_format = workbook.add_format({'num_format': '0.000000'})  # 6 decimales
-
-        # Formatear 'Resultados Combinados'
-        worksheet = writer.sheets['Resultados ']
-        # Iterar sobre las columnas (empezando en la segunda columna si la primera es índice)
-        for idx, col in enumerate(resultados.columns, start=1):  # start=1 para saltar la columna de índice
-            worksheet.set_column(idx, idx, 15, float_format)  # 15 es el ancho de columna opcional
-
-    print(f"DataFrames guardados y formateados en Excel en {excel_save_path}")

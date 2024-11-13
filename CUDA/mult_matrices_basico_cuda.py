@@ -21,7 +21,7 @@ __global__ void MatrixMul_kernel(int dim, float* A, float* B, float* C) {
 }
 """
 
-def ejecutar_kernel(dim,A,B,block,grid):
+def ejecutar_kernel(dim,A,B,block_value,grid_value):
 
     # Inicializar CUDA
     cuda.init()
@@ -46,20 +46,12 @@ def ejecutar_kernel(dim,A,B,block,grid):
 
     # Ejecutar kernel y medir tiempo
     start = time.time()
-    # The block argument needs to be a 3-tuple. 
-    # Since you are launching a 2D grid of 2D blocks, 
-    # you should set the z-dimension of the block to 1.
-    kernel(np.int32(dim), A_gpu, B_gpu, C_gpu, block, grid)  
+    kernel(np.int32(dim), A_gpu, B_gpu, C_gpu, block=block_value, grid=grid_value)  
     cuda.Context.synchronize()  # Asegurarse de que el kernel ha terminado
     end = time.time()
 
-    print(A,B)
     # Copiar resultados de C
     cuda.memcpy_dtoh(C, C_gpu)
-    print(C)
-
-    # Mostrar el tiempo de ejecución
-    print(f"Tiempo de ejecución del kernel: {end - start:.6f} segundos")
 
     # Limpiar
     context.pop()
