@@ -1,12 +1,10 @@
 import pyopencl as cl
 import numpy as np
-import os
-import pandas as pd
-import struct
+import hashlib
 
-
-kernel_mining ="""
- __constant uint H[8] = { 
+# Kernel actualizado con validación de SHA256
+kernel_mining = """
+__constant uint H[8] = { 
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 
     0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 
 };
@@ -75,7 +73,6 @@ void preprocesar(__private uchar* data, __global uint* data_p, ulong original_by
     data_p[(total_size / 4) - 1] = (uint)(bit_len & 0xFFFFFFFF);
 }
 
-
 void SHA256(__private uchar* mensaje, __private uchar* hash, ulong original_byte_len, __global uint* mensaje_procesado) {
     preprocesar(mensaje, mensaje_procesado, original_byte_len);
 
@@ -125,222 +122,96 @@ void SHA256(__private uchar* mensaje, __private uchar* hash, ulong original_byte
     }
 }
 
-__kernel void kernel_mining(__global const char* data, 
-                            uint start_nonce, 
-                            __global uint* new_nonce, 
-                            __global const ulong* target, 
-                            __global int* winner_id,  // Variable atómica para asegurar exclusividad
-                            __global uint* mensaje_procesado, 
-                            __global uchar* winning_hash,
-                            ulong data_len) {
-
-
-    uint nonce = start_nonce + get_global_id(0); // Cada hebra tiene un nonce único basado en su ID global
-    uint global_id = get_global_id(0); // Obtener el ID global de la hebra
-    __private uchar hash_buffer[32];
-       // Verificar si ya se ha encontrado un nonce válido
-    if (*winner_id !=-1) {
-        // Si ya se encontró un nonce, no hacer nada y terminar
-        return;
-    }
-    const ulong max_len = 256; // Tamaño máximo adecuado para combined_data
-
-    // Buffer de ayuda para almacenar los dígitos del nonce
-    uchar nonce_buffer[10];
-    int nonce_length = 0;
-     if (*winner_id !=-1) {
-        // Si ya se encontró un nonce, no hacer nada y terminar
-        return;
-    }
-
-    // Extraer los dígitos del nonce y almacenarlos en nonce_buffer
-    uint copia_nonce = nonce;
-    if (nonce == 0) {
-        nonce_buffer[nonce_length++] = '0';
-    }
-    while (copia_nonce > 0) {
-        nonce_buffer[nonce_length++] = (uchar)((copia_nonce % 10) + '0');
-        copia_nonce /= 10;
-    }
-
-    // Invertir los dígitos en nonce_buffer
-    for (int i = 0; i < nonce_length / 2; i++) {
-        uchar temp = nonce_buffer[i];
-        nonce_buffer[i] = nonce_buffer[nonce_length - 1 - i];
-        nonce_buffer[nonce_length - 1 - i] = temp;
-    }
-
-    // Concatenar el data y el nonce en una cadena de bytes
-    uchar combined_data_local[max_len];
-    ulong new_len = data_len + nonce_length;
-
-    // Copiar el data al comienzo de combined_data_local
-    for (ulong i = 0; i < data_len; i++) {
-        combined_data_local[i] = data[i];
-    }
-
-    // Añadir el nonce al final de combined_data_local
-    for (int i = 0; i < nonce_length; i++) {
-        combined_data_local[data_len + i] = nonce_buffer[i];
-    }
-       // Verificar si ya se ha encontrado un nonce válido
-    if (*winner_id !=-1) {
-        // Si ya se encontró un nonce, no hacer nada y terminar
-        return;
-    }
-
-    // Llamar a la función SHA256 con los datos combinados
-    SHA256(combined_data_local, hash_buffer, new_len, mensaje_procesado);
-
-     if (*winner_id !=-1) {
-        // Si ya se encontró un nonce, no hacer nada y terminar
-        return;
-    }
-// Convertir los primeros 16 bytes del hash a dos valores de 64 bits (high y low)
-ulong hash_value_high = 0;
-ulong hash_value_low = 0;
-for (int i = 0; i < 8; i++) {
-    hash_value_high = (hash_value_high << 8) | hash_buffer[i];
-}
-for (int i = 8; i < 16; i++) {
-    hash_value_low = (hash_value_low << 8) | hash_buffer[i];
-}
-
-// Verificar si ya se encontró un nonce ganador
-if (*winner_id != -1) {
-    return; // Termina el kernel si ya hay un ganador
-}
-
-ulong target_part1 = target[0];           // Parte 1
-ulong target_part2 = target[1];   // Parte 2
-ulong target_part3 = target[2];  // Parte 3
-ulong target_part4 = target[3];  // Parte 4
-
-// Comparar el hash con el target
-if ((hash_value_high < target[0]) ||
-    (hash_value_high == target[0] && hash_value_low < target[1]) ||
-    (hash_value_high == target[0] && hash_value_low == target[1] && hash_value_high < target[2]) ||
-    (hash_value_high == target[0] && hash_value_low == target[1] && hash_value_high == target[2] && hash_value_low < target[3])) {
-    
-    // Intentar establecer el ID del ganador
-    if (atomic_cmpxchg(winner_id, -1, global_id) == -1) { // Solo el primer hilo que consigue el valor es el ganador
-        if (*winner_id == global_id) {
-            *new_nonce = nonce; // Guarda el nonce que cumple la condición
-        }
-    }
-}
-
-}
-
-
 """
 
-
-
-def mining_GPU(kernel_name, kernel_code, device_type, header, target,global_size,local_size):
+# Código Python para ejecutar el kernel
+def mining_GPU(kernel_name, kernel_code, device_type, header, target, global_size, local_size):
     platform = cl.get_platforms()[0]
     device = platform.get_devices(device_type=device_type)[0]
     context = cl.Context([device])
     command_queue = cl.CommandQueue(context, device=device, properties=cl.command_queue_properties.PROFILING_ENABLE)
-   
-    # Crear el kernel
+
     program = cl.Program(context, kernel_code).build()
     kernel = cl.Kernel(program, kernel_name)
 
-    # Tamaño del header del bloque que se va a minar
     HEADER_SIZE = len(header)
-   
-    # Creación de buffers necesarios
+
     header_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=header)
     result_nonce = np.zeros(1, dtype=np.uint32)
     result_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, result_nonce.nbytes)
-    found = np.zeros(1, dtype=np.int32)
-    found_buffer = cl.Buffer(context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=found)
-    lock = np.zeros(1, dtype=np.int32)
-    lock_buffer = cl.Buffer(context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=lock)
     winner_id = np.array([-1], dtype=np.int32)
     winner_buffer = cl.Buffer(context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=winner_id)
-
-    # Buffer auxiliar para poder calcular la función SHA256
     mensaje_procesado = np.zeros(64, dtype=np.uint32)
     mensaje_procesado_buffer = cl.Buffer(context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=mensaje_procesado)
-   
-    # Buffer para almacenar hash obtenido
-    hash_buffer = cl.Buffer(context, cl.mem_flags.READ_WRITE, size=32)
     hash_final = cl.Buffer(context, cl.mem_flags.READ_WRITE, size=32)
-   
-    # Valor inicial del nonce, siempre 0
-    start_nonce = 0
-   
-    # Convertir el target a buffer de bytes
-    target_buffer = np.zeros(4, dtype=np.uint64)  # Ahora para cuatro partes
-    target_buffer[0] = target & 0xFFFFFFFFFFFFFFFF  # Parte 1
-    target_buffer[1] = (target >> 64) & 0xFFFFFFFFFFFFFFFF  # Parte 2
-    target_buffer[2] = (target >> 128) & 0xFFFFFFFFFFFFFFFF  # Parte 3
-    target_buffer[3] = (target >> 192) & 0xFFFFFFFFFFFFFFFF  # Parte 4
+
+    debug_data = np.zeros(64, dtype=np.uint8)
+    debug_data_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, debug_data.nbytes)
+
+    target_buffer = np.zeros(4, dtype=np.uint64)
+    target_buffer[0] = target & 0xFFFFFFFFFFFFFFFF
+    target_buffer[1] = (target >> 64) & 0xFFFFFFFFFFFFFFFF
+    target_buffer[2] = (target >> 128) & 0xFFFFFFFFFFFFFFFF
+    target_buffer[3] = (target >> 192) & 0xFFFFFFFFFFFFFFFF
     target_buffer_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=target_buffer)
 
-   
-    # Establecer argumentos kernel
     kernel.set_arg(0, header_buffer)
-    kernel.set_arg(1, np.uint32(start_nonce))
+    kernel.set_arg(1, np.uint32(0))
     kernel.set_arg(2, result_buffer)
     kernel.set_arg(3, target_buffer_buffer)
-    #kernel.set_arg(4, found_buffer)
-    #kernel.set_arg(5, lock_buffer)
     kernel.set_arg(4, winner_buffer)
     kernel.set_arg(5, mensaje_procesado_buffer)
     kernel.set_arg(6, hash_final)
     kernel.set_arg(7, np.uint64(HEADER_SIZE))
-   
-    # Ejecutar kernel
+    kernel.set_arg(8, debug_data_buffer)
+
     event = cl.enqueue_nd_range_kernel(command_queue, kernel, global_size, local_size)
     event.wait()
-   
-    # Copiar valor del nonce final
+
     hash = np.zeros(32, dtype=np.uint8)
     cl.enqueue_copy(command_queue, result_nonce, result_buffer).wait()
     cl.enqueue_copy(command_queue, hash, hash_final).wait()
-   
-    # Obtener tiempos
+    cl.enqueue_copy(command_queue, debug_data, debug_data_buffer).wait()
+
     exec_time = 1e-9 * (event.profile.end - event.profile.start)
 
-    return exec_time, result_nonce
+    print("Datos combinados depurados (hex):", ''.join(f'{byte:02x}' for byte in debug_data))
+
+    return exec_time, result_nonce, hash
 
 
+# Configuración del header y target
+header = bytes.fromhex('0abc')
+target = 0x00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+global_size = (2**10,)
+local_size = (1,)
 
-  # Simulación de campos del encabezado
-version = 2  # Versión del bloque (4 bytes)
-prev_block_hash = "0000000000000000000babae9ed8f7bb2b8d3f9f97bba97b8b8b8b8b8b8b8b8b"
-merkle_root = "4d5f5c9ac7ed8f96b0e8a6b3b1c1a3e5f7d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6"
-timestamp = 1633046400
-bits = 0x17148edf
-nonce = 2083236893
+# Ejecutar el kernel
+exec_time, result_nonce, hash = mining_GPU("kernel_mining", kernel_mining, cl.device_type.GPU, header, target, global_size, local_size)
 
-    # Construcción del encabezado en binario
-header = (
-        str(version).encode('utf-8') +
-        bytes.fromhex(prev_block_hash) +
-        bytes.fromhex(merkle_root) +
-        timestamp.to_bytes(4, 'little') +
-        bits.to_bytes(4, 'little') +
-        nonce.to_bytes(4, 'little')
-    )
-   
-    # Fijar un global size
-global_size = (2**4,)
-local_size=(1,)
+# Mostrar resultados del kernel
+print(f"Execution time: {exec_time}")
+print(f"Nonce encontrado: {result_nonce}")
+print(f"Hash encontrado: {''.join(f'{byte:02x}' for byte in hash)}")
 
-    # Nombre del kernel
-kernel_name = "kernel_mining"
+# Verificación fuera del kernel
+hash_value = int.from_bytes(hash, byteorder='big')
+print(f"Hash value (decimal): {hash_value}")
+print(f"Target: {target}")
+if hash_value < target:
+    print("El hash generado dentro del kernel es válido (menor que el target).")
+else:
+    print("El hash generado dentro del kernel no es válido (mayor que el target).")
 
-    # Device type
-device_type = cl.device_type.GPU
+# Comprobación independiente fuera del kernel
+def calculate_sha256(header, nonce):
+    combined = header + str(nonce).encode('utf-8')
+    return hashlib.sha256(combined).digest()
 
-target = 0x00000000000000000000000000000000000000000000000000000000000000FF
-
-exec_time, result_nonce = mining_GPU(kernel_name, kernel_mining, device_type, header, target, global_size, local_size)
-print(exec_time)
-print(nonce)
-
-
+hash_outside_kernel = calculate_sha256(header, result_nonce[0])
+hash_outside_value = int.from_bytes(hash_outside_kernel, byteorder='big')
+print(f"SHA256 calculado fuera del kernel: {hash_outside_kernel.hex()}")
+if hash_outside_value < target:
+    print("El hash calculado fuera del kernel es válido (menor que el target).")
+else:
+    print("El hash calculado fuera del kernel no es válido (mayor que el target).")

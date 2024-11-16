@@ -1,4 +1,5 @@
 import ctypes
+import hashlib
 PYOPENCL_COMPILER_OUTPUT=1
 
 kernel_check_hash="""
@@ -242,15 +243,11 @@ print(f"Execution time: {exec_time} s")
 print(f"Hash: {hexadecimal}")
 print(f"Combined Data: {combined_data_str}")
 
-target = 0x00FFFFFFFFFFFFFFFF
-target_256 = target << (256 - 64)  # Desplazamos el target a la posición correcta para 256 bits
+# Comprobación independiente fuera del kernel
+def calculate_sha256(header, nonce):
+    combined = header + str(nonce).encode('utf-8')
+    return hashlib.sha256(combined).digest()
 
-hash_hex = hexadecimal
-hash_256 = int(hash_hex, 16)
-print(hash_256)
-
-is_smaller = hash_256 < target_256
-print(f"Hash es menor que el target: {is_smaller}")
-print(f"hash_256: {hash_256}")
-print(f"target_256: {target_256}")
-print(69219561154144930273947972618403072307732098451848606426872203119215942227471<115792089237316195417293883273301227089434195242432897623355228563449095127040)
+hash_outside_kernel = calculate_sha256(data_bytes, 41)
+hash_outside_value = int.from_bytes(hash_outside_kernel, byteorder='big')
+print(f"SHA256 calculado fuera del kernel: {hash_outside_kernel.hex()}")
