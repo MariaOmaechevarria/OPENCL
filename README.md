@@ -46,8 +46,8 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
             - experimento_1000veces.ipynb: Experimento ejecutando filtros de imagnes con distintos local sizes pero calculando el promedio de los tiempos. Ejecutar 
                 el kernel 1000 veces y devolver los tiempos medios.Resultados se pueden encontrar en EXPERIMENTOS RESULTADOS 1000veces
 
-        - EXPERIMENTOS: Resultados de todos los experimentos anteriores
-        - IMAGENES: Imagenes sobre las que se van a aplicar los filtros
+      - EXPERIMENTOS: Resultados de todos los experimentos anteriores
+      - IMAGENES: Imagenes sobre las que se van a aplicar los filtros
 
   3. FUNCION HASH
      Podemos encontrar los siguientes archivos:
@@ -83,7 +83,7 @@ Se encuentran las siguientes subcarpetas:
         - Experimento_local_sizes.ipynb: Para todos los kernels hacer pruebas de distintos local sizes para determianr el optimo, resutados en RESULTADOS en 
                subcarpetas con el nombre del kernel
           
-    -RESULTADOS: resultados de los experimentos
+  - RESULTADOS: resultados de los experimentos
 
 5. INTRUCCIONES EJECUTAR OPENCL.lib: Instrucciones para ejecutar opencl en google collab
 6. OBTEENR_INFORMACION_DISPOSITIVO: Para obtener informacion del dispositivo que se esta usando 
