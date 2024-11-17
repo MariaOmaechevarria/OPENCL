@@ -3,13 +3,18 @@ import pyopencl as cl
 
 
 '''
-FUNCIONES COMUNES 
+FUNCIONES COMUNES PARA MANIPULACIÓN DE MATRICES Y KERNELS EN OPENCL
 '''
 
-#FUNCION PREPRATIVOS ANTES DE CREAR KERNEL+ CREAR KERNEL
-
 def preparacion_kernel(device_type, kernel_code, kernel_name):
-    # Plataforma y dispositivo
+    """
+    Configura el entorno OpenCL y compila un kernel.
+
+    :param device_type: Tipo de dispositivo OpenCL (e.g., cl.device_type.GPU).
+    :param kernel_code: Código fuente del kernel en OpenCL.
+    :param kernel_name: Nombre del kernel en el código fuente.
+    :return: Tupla (platform, device, context, command_queue, program, kernel).
+    """
     platform = cl.get_platforms()[0]
     device = platform.get_devices(device_type=device_type)[0]
 
@@ -26,128 +31,142 @@ def preparacion_kernel(device_type, kernel_code, kernel_name):
     return platform, device, context, command_queue, program, kernel
 
 
-# ESTABLECER ARGUMENTOS KERNEL
 def establecer_args_kernel(kernel, args):
+    """
+    Configura los argumentos de un kernel.
+
+    :param kernel: Instancia del kernel compilado.
+    :param args: Lista de argumentos a pasar al kernel.
+    """
     for i, arg in enumerate(args):
         kernel.set_arg(i, arg)
 
-#EJECUTAR KERNEL
+
 def ejecutar_kernel(command_queue, kernel_filter, global_size, local_size):
+    """
+    Ejecuta un kernel OpenCL y mide su tiempo de ejecución.
+
+    :param command_queue: Cola de comandos de OpenCL.
+    :param kernel_filter: Kernel a ejecutar.
+    :param global_size: Tamaño global de los datos.
+    :param local_size: Tamaño local de los datos.
+    :return: Evento OpenCL del kernel.
+    """
     event = cl.enqueue_nd_range_kernel(command_queue, kernel_filter, global_size, local_size)
     event.wait()
     return event
 
 
-#CREA BUFFERS DE LAS MATRICES 
+def crear_buffers_matrices(A, B, context, dim):
+    """
+    Crea buffers OpenCL para dos matrices de entrada y una de salida.
 
-def crear_buffers_matrices(A,B,context,dim):
-    #Crear Buffers Matrices
+    :param A: Matriz de entrada A.
+    :param B: Matriz de entrada B.
+    :param context: Contexto OpenCL.
+    :param dim: Dimensiones de las matrices.
+    :return: Tupla (bufA, bufB, bufC, C).
+    """
     C = np.zeros((dim, dim), dtype=np.int32)
 
-    # Crear Buffers
     bufA = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=A)
     bufB = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=B)
-    bufC = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, C.nbytes) 
-    return bufA,bufB,bufC,C
+    bufC = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, C.nbytes)
 
+    return bufA, bufB, bufC, C
 
-#DADO UN KERNEL, ESTABLECE ARGUMENTOS,LO EJECUTA Y DEVUELVE RESULTADOS
 
 def aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC):
-    # Establecer argumentos del kernel
+    """
+    Aplica un kernel a los datos y devuelve los resultados.
+
+    :param kernel: Kernel a ejecutar.
+    :param args_kernel: Lista de argumentos del kernel.
+    :param global_size: Tamaño global de los datos.
+    :param local_size: Tamaño local de los datos.
+    :param command_queue: Cola de comandos de OpenCL.
+    :param C: Matriz de salida.
+    :param bufC: Buffer de salida.
+    :return: Tiempo de ejecución y la matriz resultante.
+    """
     establecer_args_kernel(kernel, args_kernel)
-
-    # Ejecutar el kernel (ajustado para que reciba correctamente los argumentos)
     event = ejecutar_kernel(command_queue, kernel, global_size, local_size)
-
-    # Leer el buffer de salida
     cl.enqueue_copy(command_queue, C, bufC).wait()
-
-    # Obtener el tiempo de ejecución
     exec_time = 1e-9 * (event.profile.end - event.profile.start)
-
-    return  exec_time,C
+    return exec_time, C
 
 
 '''
-FUNCIONES ESPECIFICAS PARA CADA TIPO DE KERNEL
+FUNCIONES ESPECÍFICAS PARA DIFERENTES IMPLEMENTACIONES DE MULTIPLICACIÓN DE MATRICES
 '''
 
-#FUNCION PARA REALIZAR MULTIPLICACION BASICA MATRICES
+def mult_mat_basica(dim, local_size, device_type, kernel_code, kernel_name, A, B):
+    """
+    Multiplicación básica de matrices utilizando OpenCL.
 
-def mult_mat_basica(dim,local_size,device_type,kernel_code,kernel_name,A,B):
+    :param dim: Dimensión de las matrices.
+    :param local_size: Tamaño del grupo de trabajo local.
+    :param device_type: Tipo de dispositivo OpenCL.
+    :param kernel_code: Código fuente del kernel.
+    :param kernel_name: Nombre del kernel en el código.
+    :param A: Matriz A.
+    :param B: Matriz B.
+    :return: Tiempo de ejecución y matriz resultante.
+    """
+    platform, device, context, command_queue, program, kernel = preparacion_kernel(device_type, kernel_code, kernel_name)
+    global_size = (dim, dim)
+    bufA, bufB, bufC, C = crear_buffers_matrices(A, B, context, dim)
+    args_kernel = [np.int32(dim), bufA, bufB, bufC]
+    exec_time, C = aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC)
+    return exec_time, C
 
-    platform, device, context, command_queue, program, kernel=preparacion_kernel(device_type, kernel_code, kernel_name)
 
-    #global size
-    global_size=(dim,dim)
+def mult_mat_local(dim, local_size, device_type, kernel_code, kernel_name, A, B):
+    """
+    Multiplicación de matrices utilizando memoria local para A.
 
-    #Crear Buffers Matrices
-    bufA,bufB,bufC,C=crear_buffers_matrices(A,B,context,dim)
-
-    #Args kernel
-    args_kernel=[np.int32(dim),bufA,bufB,bufC]
-
-    #Ejecutar kernel
-    exec_time,C=aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC)
-
-    return exec_time,C
-
-#FUNCION PARA REALIZAR MULTIPLICACION BASICA USANDO MEMORIA LOCAL PARA A
-
-def mult_mat_local(dim,local_size,device_type,kernel_code,kernel_name,A,B):
-    platform, device, context, command_queue, program, kernel=preparacion_kernel(device_type, kernel_code, kernel_name)
-
-    #global size
-    global_size=(dim,dim)
-
-    #Crear Buffers Matrices
-    bufA,bufB,bufC,C=crear_buffers_matrices(A,B,context,dim)
-
-    #Crear memoria local
-    # Tamaño de la memoria local (por ejemplo, para un bloque TILE_WIDTH x TILE_WIDTH)
-    numElements = dim // local_size[0]
-    local_mem_size = local_size[0] * numElements * np.dtype(np.float32).itemsize 
-
-    # Crear buffers de memoria local para sh_A y sh_B
+    :param dim: Dimensión de las matrices.
+    :param local_size: Tamaño del grupo de trabajo local.
+    :param device_type: Tipo de dispositivo OpenCL.
+    :param kernel_code: Código fuente del kernel.
+    :param kernel_name: Nombre del kernel en el código.
+    :param A: Matriz A.
+    :param B: Matriz B.
+    :return: Tiempo de ejecución y matriz resultante.
+    """
+    platform, device, context, command_queue, program, kernel = preparacion_kernel(device_type, kernel_code, kernel_name)
+    global_size = (dim, dim)
+    bufA, bufB, bufC, C = crear_buffers_matrices(A, B, context, dim)
+    num_elements = dim // local_size[0]
+    local_mem_size = local_size[0] * num_elements * np.dtype(np.int32).itemsize
     local_A = cl.LocalMemory(local_mem_size)
-    
-    #Argumentos kernel
-    args_kernel=[np.int32(dim),bufA,bufB,bufC,local_A]
-
-    #Ejecutar kernel
-
-    exec_time,C=aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC)
-
-    return exec_time,C
+    args_kernel = [np.int32(dim), bufA, bufB, bufC, local_A]
+    exec_time, C = aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC)
+    return exec_time, C
 
 
-#FUNCION PARA REALIZAR MULTIPLICACION MATRICES USANDO MEMORIA LOCAL A Y B, TILES
+def mult_mat_local_tiles(dim, local_size, device_type, kernel_code, kernel_name, A, B):
+    """
+    Multiplicación de matrices utilizando memoria local para A y B con división en tiles.
 
-def mult_mat_local_tiles(dim,local_size,device_type,kernel_code,kernel_name,A,B):
-    platform, device, context, command_queue, program, kernel=preparacion_kernel(device_type, kernel_code, kernel_name)
-
-    #global size
-    global_size=(dim,dim)
-
-    #Crear Buffers Matrices
-    bufA,bufB,bufC,C=crear_buffers_matrices(A,B,context,dim)
-
-    #Crear memoria local
-    
-    local_mem_size = local_size[0] * local_size[1] * np.dtype(np.float32).itemsize
-
-    # Crear buffers de memoria local para sh_A y sh_B
+    :param dim: Dimensión de las matrices.
+    :param local_size: Tamaño del grupo de trabajo local.
+    :param device_type: Tipo de dispositivo OpenCL.
+    :param kernel_code: Código fuente del kernel.
+    :param kernel_name: Nombre del kernel en el código.
+    :param A: Matriz A.
+    :param B: Matriz B.
+    :return: Tiempo de ejecución y matriz resultante.
+    """
+    platform, device, context, command_queue, program, kernel = preparacion_kernel(device_type, kernel_code, kernel_name)
+    global_size = (dim, dim)
+    bufA, bufB, bufC, C = crear_buffers_matrices(A, B, context, dim)
+    local_mem_size = local_size[0] * local_size[1] * np.dtype(np.int32).itemsize
     local_A = cl.LocalMemory(local_mem_size)
     local_B = cl.LocalMemory(local_mem_size)
-    
-    #Argumentos kernel
-    args_kernel=[np.int32(dim),bufA,bufB,bufC,local_A,local_B]
+    args_kernel = [np.int32(dim), bufA, bufB, bufC, local_A, local_B]
+    exec_time, C = aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC)
+    return exec_time, C
 
-    #Ejecutar kernel
-
-    exec_time,C=aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC)
-
-    return exec_time,C
 
 
