@@ -116,8 +116,7 @@ def comparar(path):
     # Mostrar la tabla de resultados
     guardar_dataframe_excel(df_results,path,'comparacion_cuda_opencl')
 
-    #Hacer un grafico
-        # Graficar los tiempos de ejecución
+    # Graficar los tiempos de ejecución
     plt.figure(figsize=(10, 6))
     plt.plot(df_results["Dimensión"], df_results["Tiempo OpenCL (s)"], label="OpenCL", marker='o')
     plt.plot(df_results["Dimensión"], df_results["Tiempo CUDA (s)"], label="CUDA", marker='s')
@@ -126,115 +125,98 @@ def comparar(path):
     plt.xlabel("Dimensión de la Matriz")
     plt.ylabel("Tiempo de Ejecución (s)")
     plt.title("Comparación de Tiempos de Ejecución entre OpenCL y CUDA")
-    # Establecer la escala logarítmica para el eje X
-   
-    plt.xscale('log')
-    
 
-    # Asegurarnos de que las etiquetas del eje X correspondan a las dimensiones
-    plt.xticks(dims)  # Mostrar solo los valores de dims en el eje X
-    
-    # Mejorar la visualización de las etiquetas, por si acaso
-    plt.xticks(rotation=45)
-    
+    # Establecer las etiquetas personalizadas para el eje X
+    dims = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+    plt.xticks(dims, labels=[str(d) for d in dims], rotation=45)
 
+    # Forzar la escala logarítmica con etiquetas específicas
+    plt.gca().set_xscale('log')
+    plt.gca().set_xticks(dims)
+    plt.gca().get_xaxis().set_major_formatter(plt.ScalarFormatter())
+    plt.gca().get_xaxis().set_minor_formatter(plt.NullFormatter())
+
+    # Agregar leyenda y rejilla
     plt.legend()
-    plt.grid(True) # Mostrar solo los valores de dims en el eje X
- 
+    plt.grid(True)
 
-    #Guardar grafico
-
-    save_path =os.path.join(path, 'opencl_cuda.png')
+    # Guardar o mostrar el gráfico
+    save_path = "grafico_cuda_opencl.png"
     plt.savefig(save_path)
+    plt.show()
+
+
 
 
 
 #Funcion para aplicar kernel_cuda para distintos block y grid sizes
 
-def aplicar_kernel_local_sizes():
+def aplicar_kernel_local_sizes_completo():
+    # Combinaciones de bloques fijas y dinámicas (128 hebras por bloque)
+    combinaciones_fijas = [(1, 1), (2, 2), (4, 4), (8, 8), (16, 16), (32, 32)]
+    combinaciones_128 = [(x, 128 // x) for x in range(1, 129) if 128 % x == 0]
+    todas_combinaciones = combinaciones_fijas + combinaciones_128
 
-  index = [(f"({2 ** i}/{2 ** i})" if i != 0 else "(1/1)") for i in range(0, 5)]
-  columns = [2 ** i for i in range(1, 14)]  # 2^1 a 2^13 (de 2 a 8192)
-  results_df = pd.DataFrame(index=index, columns=columns)
-  i=1
-  while i<=32:
+    # Índices y columnas del DataFrame
+    index = [f"Block ({block[0]}/{block[1]})" for block in todas_combinaciones]
+    columns = [2 ** i for i in range(1, 14)]  # Dimensiones de las matrices
 
-    local_size=(i,i)
-    if i==1:
-        dim=2
+    # Crear el DataFrame
+    results_df = pd.DataFrame(index=index, columns=columns)
 
-    else:
-      dim=i
+    for block in todas_combinaciones:
+        block_x, block_y = block
+        block_size = block_x * block_y
 
-    while dim<=8192:
+        for dim in columns:
+            # Verificar que la configuración del bloque sea válida
+            if block_size > dim * dim:
+                # Si el bloque excede el tamaño de la matriz, omitir esta configuración
+                results_df.loc[f"Block ({block_x}/{block_y})", dim] = "NaN"
+                continue
 
-       A = np.random.random(size=(dim, dim)).astype(np.float32)
-       B = np.random.random(size=(dim, dim)).astype(np.float32)
-       
-       grid = (dim // i, dim // i)
-       block = (i, i,1)
+            A = np.random.random(size=(dim, dim)).astype(np.float32)
+            B = np.random.random(size=(dim, dim)).astype(np.float32)
 
-       exec_time,C=cuda.ejecutar_kernel(dim,A,B,block,grid)
+            grid_x = math.ceil(dim / block_x)
+            grid_y = math.ceil(dim / block_y)
 
-       results_df.loc[f"({i}/{i})", dim] = exec_time if exec_time is not None else "NP"
+            block_value = (block_x, block_y, 1)
+            grid_value = (grid_x, grid_y)
 
+            try:
+                exec_time, _ = cuda.ejecutar_kernel(dim, A, B, block_value, grid_value)
+                results_df.loc[f"Block ({block_x}/{block_y})", dim] = exec_time if exec_time is not None else "NP"
+            except Exception as e:
+                results_df.loc[f"Block ({block_x}/{block_y})", dim] = f"Error: {str(e)}"
 
-       dim*=2
-
-       del A,B
-
-
-    i*=2
-    
-  
-
-  return results_df
-
-
-# DADO UN DATA FRAME REALIZA SU GRAFICO DONDE EN EL EJE X ESTAN LAS DIMENSIONES DE LAS MATRICES, EJE Y LOS TIEMPOS Y CADA LCOAL SIZE ES UNA LINEA
-def graficar_tiempos_ejecucion(data, columns_to_plot=None, save_path=None):
-    # Convertir a numérico y reemplazar errores con NaN
-    data = data.apply(pd.to_numeric, errors='coerce')
-
-    # Eliminar columnas completamente vacías
-    data = data.dropna(axis=1, how='all')
+    return results_df
+def graficar_tiempos_ejecucion_completo(data, save_path=None):
+    # Convertir columnas a numérico, reemplazar errores con NaN y eliminar columnas vacías
+    data = data.apply(pd.to_numeric, errors='coerce').dropna(axis=1, how='all')
 
     plt.figure(figsize=(12, 8))
 
-    # Si se especifican columnas a graficar, usarlas, de lo contrario, graficar todo
-    if columns_to_plot is not None:
-        data = data[columns_to_plot]
-    else:
-        data = data.dropna(axis=0, how='all')  # Eliminar filas completamente vacías
+    # Iterar sobre cada fila (tamaño de bloque)
+    for block_size in data.index:
+        if block_size not in data.columns:
+            continue  # Saltar si el tamaño de bloque no es una columna
 
-    # Iterar sobre cada columna del DataFrame (cada local size)
-    for local_size in data.columns:
-        # Obtener los valores de tiempo correspondientes a cada imagen
-        row_values = data[local_size].dropna().values  # Eliminamos NaN
-        dim_matrix = data.index[data[local_size].notna()]  
-        
-        # Graficar solo si hay datos
+        row_values = data.loc[block_size].dropna().values
+        dim_matrix = data.columns[data.loc[block_size].notna()]
+
         if len(row_values) > 0:
-            plt.plot(dim_matrix, row_values, marker='o', label=f'Tamaño Local: {local_size}')
+            plt.plot(dim_matrix, row_values, marker='o', label=f'Tamaño Local: {block_size}')
 
-    # Configuraciones de la gráfica
     plt.title('Tiempos de Ejecución por Tamaño de Trabajo')
     plt.xlabel('Dimensiones Matrices')
     plt.ylabel('Tiempo de Ejecución (segundos)')
-    ticks = [2 ** i for i in range(1, 14)]  # 2, 4, 8, ..., 8192
-    plt.xticks(ticks, labels=[str(t) for t in ticks], rotation=45)
-
-    # Usar escala logarítmica en el eje x
     plt.xscale('log')
-
-    # Ajustar el formato del eje x para que muestre solo los ticks especificados
-    plt.gca().set_xticks(ticks)
-    plt.gca().xaxis.set_major_formatter(plt.ScalarFormatter())
+    plt.xticks([2 ** i for i in range(1, 14)], rotation=45)
     plt.legend(title='Tamaños de Trabajo', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True)
-    plt.tight_layout()  # Ajustar el diseño
+    plt.tight_layout()
 
-    # Guardar o mostrar la gráfica
     if save_path:
         plt.savefig(save_path)
         print(f"Gráfico guardado en {save_path}")
@@ -242,6 +224,7 @@ def graficar_tiempos_ejecucion(data, columns_to_plot=None, save_path=None):
         plt.show()
 
     plt.close()
+
 
 
 def mejores_valores(results_combined):
@@ -280,7 +263,7 @@ def mejores_valores(results_combined):
 def experimento_matrices(base_save_dir,funcion_nombre='kernel_cuda'):
     
     # PARTE 1: APLICAR LOCAL SIZES GENERICAS
-    results_general = aplicar_kernel_local_sizes()
+    results_general = aplicar_kernel_local_sizes_completo()
    
 
     # PARTE 4: DEVOLVER LOS MEJORES VALORES PARA CADA FILA
@@ -291,9 +274,8 @@ def experimento_matrices(base_save_dir,funcion_nombre='kernel_cuda'):
 
     # PARTE 6: HACER Y GUARDAR UN GRAFICO SOLO CON LOS RESULTADOS GENERALES
     general_save_path = os.path.join(base_save_dir, 'tiempos_ejecucion_generales.png')
-    graficar_tiempos_ejecucion(results_general.T, save_path=general_save_path)
+    graficar_tiempos_ejecucion_completo(results_general.T, save_path=general_save_path)
 
 
     # PARTE 8: Devolver los DataFrames
     return results_general , best_results_df
-
