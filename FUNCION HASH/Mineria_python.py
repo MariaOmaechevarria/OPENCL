@@ -4,7 +4,7 @@ import time
 
 max_nonce = 2 ** 32  # 4 billion
 
-def proof_of_work(header, difficulty_bits):
+def proof_of_work(header:bytearray, difficulty_bits:int) -> int:
     # Calculate the difficulty target
     target = 2 ** (256 - difficulty_bits)
     for nonce in range(max_nonce):
@@ -18,32 +18,6 @@ def proof_of_work(header, difficulty_bits):
     return nonce
 
 
-  # Simulación de campos del encabezado
-version = 2  # Versión del bloque (4 bytes)
-prev_block_hash = "0000000000000000000babae9ed8f7bb2b8d3f9f97bba97b8b8b8b8b8b8b8b8b"
-merkle_root = "4d5f5c9ac7ed8f96b0e8a6b3b1c1a3e5f7d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6"
-timestamp = 1633046400
-bits = 0x17148edf
-nonce = 2083236893
-
-    # Construcción del encabezado en binario
-header = (
-        str(version).encode('utf-8') +
-        bytes.fromhex(prev_block_hash) +
-        bytes.fromhex(merkle_root) +
-        timestamp.to_bytes(4, 'little') +
-        bits.to_bytes(4, 'little') +
-        nonce.to_bytes(4, 'little')
-    )
-
-hash_result = hashlib.sha256((str(header) + str(2083236893)).encode()).hexdigest()
-print(hash_result)
-print(int(hash_result, 16))
-target= 0x00000000000000000000000000000000000000000000000000000000000000FF
-print(target)
-print(int(hash_result, 16) < target)
-
-'''
 
 
 if __name__ == '__main__':
@@ -67,4 +41,3 @@ if __name__ == '__main__':
         if elapsed_time > 0:  # Estimate the hashes per second
             hash_power = float(nonce) / elapsed_time
             print("Hashing Power: %d hashes per second" % hash_power)
-'''

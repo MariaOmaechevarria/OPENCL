@@ -3,18 +3,24 @@ import numpy as np
 import os
 import pandas as pd
 import struct
-from Mineria_GPU_def import kernel_mining,mining_GPU,validate_nonce
-import os
+from Mineria_GPU_def import kernel_mining, mining_GPU, validate_nonce
 import matplotlib.pyplot as plt
-import struct
 
 
+# FUNCION PARA ALMACENAR DATA FRAMES EN FORMATO EXCEL, GUARDA EL DATA FRAME RESULTADOS Y EL DATA FRAME MEJORES RESULTADOS
 
+def guardar_dataframes_excel(resultados: pd.DataFrame, base_save_dir: str, funcion_nombre: str) -> None:
+    """
+    Guarda los resultados en un archivo Excel en la ruta especificada.
 
-#FUNCION PARA ALMACENAR DATA FRAMES EN FORMATO EXCEL , GUARDA EL DATA FRAME RESULTADOS Y EL DATA FRAME MEJORES RESULTADOS
+    Inputs:
+    - resultados (pd.DataFrame): DataFrame con los resultados del experimento.
+    - base_save_dir (str): Directorio base donde se almacenarán los resultados.
+    - funcion_nombre (str): Nombre de la función para organizar los resultados.
 
-# Función para guardar DataFrames en Excel
-def guardar_dataframes_excel(resultados, base_save_dir, funcion_nombre):
+    Outputs:
+    - None: Guarda un archivo Excel formateado en el directorio especificado.
+    """
     funcion_dir = os.path.join(base_save_dir, funcion_nombre)
     os.makedirs(funcion_dir, exist_ok=True)
     
@@ -23,7 +29,7 @@ def guardar_dataframes_excel(resultados, base_save_dir, funcion_nombre):
     with pd.ExcelWriter(excel_save_path, engine='xlsxwriter') as writer:
         resultados.to_excel(writer, sheet_name='Resultados', index=True)
         workbook = writer.book
-        float_format = workbook.add_format({'num_format': '0.000000000'})
+        float_format = workbook.add_format({'num_format': '0.000000000'})  # Formato numérico para alta precisión
         worksheet = writer.sheets['Resultados']
         for idx, col in enumerate(resultados.columns, start=1):
             worksheet.set_column(idx, idx, 15, float_format)
@@ -31,29 +37,45 @@ def guardar_dataframes_excel(resultados, base_save_dir, funcion_nombre):
     print(f"DataFrames guardados y formateados en Excel en {excel_save_path}")
 
 
+def experimento_global_sizes(
+    path: str, 
+    target: np.ndarray, 
+    target_name: str
+) -> None:
+    """
+    Experimenta con diferentes tamaños de global y local sizes en OpenCL.
 
-# Función para experimentar con distintos global sizes
-def experimento_global_sizes(path,target,target_name):
-    #target = np.array([0x0000FFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32)  # Dificultad fija
+    Inputs:
+    - path (str): Ruta base donde se guardarán los resultados.
+    - target (np.ndarray): Array objetivo (target) que define la dificultad.
+    - target_name (str): Nombre identificador del objetivo.
+
+    Outputs:
+    - None: Genera gráficos y guarda resultados en Excel.
+    """
     kernel_name = "kernel_mining"
     device_type = cl.device_type.GPU
 
-    # Configuración del bloque
+    # Configuración inicial
     block = bytearray(80)
-    global_sizes = [(2**7,), (2**8,), (2**9,), (2**10,), (2**12,), (2**15,),(2**16,) ,(2**20,)]
+    global_sizes = [(2**7,), (2**8,), (2**9,), (2**10,), (2**12,), (2**15,), (2**16,), (2**20,)]
     local_sizes = [(1,), (2,), (4,), (8,), (16,), (32,), (64,), (128,)]
 
+    # Diccionario para almacenar resultados
     results_dict = {gs[0]: [] for gs in global_sizes}
 
+    # Realizar experimentos
     for global_size in global_sizes:
         for local_size in local_sizes:
-            exec_time, result_nonce, hash_value = mining_GPU(kernel_mining,kernel_name, block, target, global_size, local_size,device_type)
+            exec_time, result_nonce, hash_value = mining_GPU(kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
             results_dict[global_size[0]].append(exec_time)
 
+    # Convertir resultados a DataFrame
     df = pd.DataFrame(results_dict, index=[ls[0] for ls in local_sizes])
     df.index.name = 'Local Size'
     df.columns.name = 'Global Size'
 
+    # Guardar resultados en Excel
     output_dir2 = os.path.join(path, "FUNCION HASH/RESULTADOS")
     os.makedirs(output_dir2, exist_ok=True)
 
@@ -62,6 +84,7 @@ def experimento_global_sizes(path,target,target_name):
 
     guardar_dataframes_excel(df, output_dir, 'mining_global_sizes')
 
+    # Graficar resultados
     plt.figure(figsize=(12, 8))
     for global_size in global_sizes:
         plt.plot([ls[0] for ls in local_sizes], df[global_size[0]], marker='o', label=f'Global Size {global_size[0]}')
@@ -79,7 +102,18 @@ def experimento_global_sizes(path,target,target_name):
     print(f"Gráfico guardado en: {plt_path}")
     plt.show()
 
-def comparacion_targets(path):
+
+def comparacion_targets(path: str) -> None:
+    """
+    Compara diferentes objetivos (targets) y mide los tiempos de ejecución.
+
+    Inputs:
+    - path (str): Ruta base donde se guardarán los resultados.
+
+    Outputs:
+    - None: Genera gráficos y guarda resultados en Excel.
+    """
+    # Lista de objetivos con diferentes niveles de dificultad
     targets = [
         np.array([0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF], dtype=np.uint32),  # Mínima dificultad
         np.array([0x7FFFFFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
@@ -96,7 +130,7 @@ def comparacion_targets(path):
     device_type = cl.device_type.GPU
     local_sizes = [(1,), (2,), (4,), (8,), (16,), (32,), (64,), (128,)]
 
-    # Crear un diccionario para almacenar los resultados
+    # Diccionario para almacenar resultados
     results_dict = {tuple(target): [] for target in targets}
 
     for target in targets:
