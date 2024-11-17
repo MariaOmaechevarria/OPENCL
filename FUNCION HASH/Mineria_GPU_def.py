@@ -112,17 +112,20 @@ __kernel void kernel_mining(
     uint cur_nonce = get_global_id(0);
     __private unsigned char my_raw[128] = {0};
     for (int i = 0; i < 80; i++) my_raw[i] = block_raw[i];
+     if (*nonce != 0xFFFFFFFF) return;
 
     for (size_t i = 0; i < 4; i++) {
         my_raw[80 + i] = (cur_nonce >> (8 * i)) & 0xFF;
     }
-
+    if (*nonce != 0xFFFFFFFF) return;
     uint hash[8] = {0};
     loc_sha256(my_raw, 128, hash);
+     if (*nonce != 0xFFFFFFFF) return;
 
     for (int i = 0; i < 8; i++) {
         debug_hash[i] = hash[i];
     }
+    if (*nonce != 0xFFFFFFFF) return;
 
     for (int i = 7; i >= 0; i--) {
         uint big_hi = ((hash[i] & 0xFF) << 24) |
@@ -243,11 +246,11 @@ def mining_GPU(kernel_code, kernel_name, block, target, global_size, local_size,
         exec_time = 1e-9 * (event.profile.end - event.profile.start)
 
         if nonce[0] != 0xFFFFFFFF:
-            print(f"Nonce encontrado en iteración {iteration}: {nonce[0]}")
+            
 
             is_valid, hash_value = validate_nonce(block, nonce[0], int.from_bytes(target.tobytes(), byteorder='big'))
             if is_valid:
-                print(f"Nonce válido con hash: {hash_value.hex()}")
+                
                 return exec_time,nonce[0], hash_value
 
             else:

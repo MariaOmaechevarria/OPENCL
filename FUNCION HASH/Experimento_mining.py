@@ -33,14 +33,14 @@ def guardar_dataframes_excel(resultados, base_save_dir, funcion_nombre):
 
 
 # Función para experimentar con distintos global sizes
-def experimento_global_sizes(path):
-    target = np.array([0x0000FFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32)  # Dificultad fija
+def experimento_global_sizes(path,target,target_name):
+    #target = np.array([0x0000FFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32)  # Dificultad fija
     kernel_name = "kernel_mining"
     device_type = cl.device_type.GPU
 
     # Configuración del bloque
     block = bytearray(80)
-    global_sizes = [(2**7,), (2**8,), (2**9,), (2**10,), (2**12,), (2**15,), (2**20,)]
+    global_sizes = [(2**7,), (2**8,), (2**9,), (2**10,), (2**12,), (2**15,),(2**16,) ,(2**20,)]
     local_sizes = [(1,), (2,), (4,), (8,), (16,), (32,), (64,), (128,)]
 
     results_dict = {gs[0]: [] for gs in global_sizes}
@@ -54,7 +54,10 @@ def experimento_global_sizes(path):
     df.index.name = 'Local Size'
     df.columns.name = 'Global Size'
 
-    output_dir = os.path.join(path, "FUNCION HASH/RESULTADOS")
+    output_dir2 = os.path.join(path, "FUNCION HASH/RESULTADOS")
+    os.makedirs(output_dir2, exist_ok=True)
+
+    output_dir = os.path.join(output_dir2, target_name)
     os.makedirs(output_dir, exist_ok=True)
 
     guardar_dataframes_excel(df, output_dir, 'mining_global_sizes')
@@ -84,10 +87,7 @@ def comparacion_targets(path):
         np.array([0x000FFFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
         np.array([0x0000FFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
         np.array([0x00000FFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x000000FF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x0000000F] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x00000001] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x00000000] + [0xFFFFFFFF] * 7, dtype=np.uint32),  # Máxima dificultad
+        np.array([0x000000FF] + [0xFFFFFFFF] * 7, dtype=np.uint32)
     ]
 
     block = bytearray(80)
@@ -100,7 +100,6 @@ def comparacion_targets(path):
     results_dict = {tuple(target): [] for target in targets}
 
     for target in targets:
-        print('Vamos por el target',target)
         for local_size in local_sizes:
             exec_time, result_nonce, hash_value = mining_GPU(kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
             results_dict[tuple(target)].append(exec_time)
@@ -138,7 +137,3 @@ def comparacion_targets(path):
     plt.savefig(plt_path)
     print(f"Gráfico guardado en: {plt_path}")
     plt.show()
-
-path="C:/Users/maria/OneDrive/OPENCL"
-#experimento_global_sizes(path)
-comparacion_targets(path)
