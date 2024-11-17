@@ -79,6 +79,22 @@ def ejecutar_kernel(dim, A, B, block_value, grid_value):
         # Asegurarse de liberar el contexto
         context.pop()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 # Configuración para la multiplicación de matrices
 dim = 8  # Dimensión de la matriz
