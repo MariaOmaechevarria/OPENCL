@@ -16,7 +16,7 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
        - CUDA_EXPERIMENTOS.ipynb : Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, subdividida en dos carpetas, una 
                para cada experimento. Hay una tabla y un grafico para cada una.
 
-   2. FILTROS IMAGENES
+2. FILTROS IMAGENES
 
       Podemos encontrar las siguientes subcarpetas
 
