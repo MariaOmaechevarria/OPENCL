@@ -191,32 +191,44 @@ def aplicar_kernel_local_sizes_completo():
                 results_df.loc[f"Block ({block_x}/{block_y})", dim] = f"Error: {str(e)}"
 
     return results_df
-def graficar_tiempos_ejecucion_completo(data, save_path=None):
-    # Convertir columnas a numérico, reemplazar errores con NaN y eliminar columnas vacías
-    data = data.apply(pd.to_numeric, errors='coerce').dropna(axis=1, how='all')
 
+
+def graficar_dataframe(df,save_path):
+    """
+    Genera un gráfico de líneas para cada fila del DataFrame dado.
+    
+    Args:
+    - df (pd.DataFrame): DataFrame con índices representando configuraciones de bloques
+                         y columnas representando las dimensiones de las matrices.
+                         
+    Devuelve:
+    - Un gráfico con líneas representando los tiempos de ejecución por configuración de bloque.
+    """
     plt.figure(figsize=(12, 8))
+    
+    # Asegurarse de que los valores sean numéricos, reemplazando errores con NaN
+    df = df.apply(pd.to_numeric, errors='coerce')  
 
-    # Iterar sobre cada fila (tamaño de bloque)
-    for block_size in data.index:
-        if block_size not in data.columns:
-            continue  # Saltar si el tamaño de bloque no es una columna
+    for block in df.index:
+        plt.plot(
+            df.columns,
+            df.loc[block],
+            marker='o',
+            label=block
+        )
 
-        row_values = data.loc[block_size].dropna().values
-        dim_matrix = data.columns[data.loc[block_size].notna()]
-
-        if len(row_values) > 0:
-            plt.plot(dim_matrix, row_values, marker='o', label=f'Tamaño Local: {block_size}')
-
-    plt.title('Tiempos de Ejecución por Tamaño de Trabajo')
-    plt.xlabel('Dimensiones Matrices')
-    plt.ylabel('Tiempo de Ejecución (segundos)')
-    plt.xscale('log')
-    plt.xticks([2 ** i for i in range(1, 14)], rotation=45)
-    plt.legend(title='Tamaños de Trabajo', bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Configuraciones del gráfico
+    plt.title("Tiempos de Ejecución por Configuraciones de Bloque")
+    plt.xlabel("Dimensiones de Matrices")
+    plt.ylabel("Tiempo de Ejecución (s)")
+    plt.xscale('log')  # Escala logarítmica para el eje X
+    plt.xticks(df.columns, labels=[str(c) for c in df.columns], rotation=45)
+    plt.legend(title="Configuraciones de Bloque", bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True)
     plt.tight_layout()
 
+    # Mostrar el gráfico
+    
     if save_path:
         plt.savefig(save_path)
         print(f"Gráfico guardado en {save_path}")
@@ -224,6 +236,7 @@ def graficar_tiempos_ejecucion_completo(data, save_path=None):
         plt.show()
 
     plt.close()
+
 
 
 
@@ -274,7 +287,7 @@ def experimento_matrices(base_save_dir,funcion_nombre='kernel_cuda'):
 
     # PARTE 6: HACER Y GUARDAR UN GRAFICO SOLO CON LOS RESULTADOS GENERALES
     general_save_path = os.path.join(base_save_dir, 'tiempos_ejecucion_generales.png')
-    graficar_tiempos_ejecucion_completo(results_general.T, save_path=general_save_path)
+    graficar_dataframe(results_general, save_path=general_save_path)
 
 
     # PARTE 8: Devolver los DataFrames
