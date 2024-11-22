@@ -175,23 +175,28 @@ def experimento_matrices(funcion_aplicar, kernel_code: str, kernel_name: str, de
     :return: Tuple con dos DataFrames: resultados combinados y mejores resultados.
     """
     results_general = aplicar_kernel_local_sizes(kernel_code, kernel_name, device_type, funcion_aplicar)
-    results_optimal = local_sizes_optimos(funcion_aplicar, kernel_code, kernel_name, device_type, compute_units, processing_elements)
-    
-    df_combined = pd.concat([results_general, results_optimal], axis=0)
+
+    if kernel_name=='MatrixMul_Local_Memory':
+
+         df_combined=results_general
+    else:
+        
+        results_optimal = local_sizes_optimos(funcion_aplicar, kernel_code, kernel_name, device_type, compute_units, processing_elements)
+        df_combined = pd.concat([results_general, results_optimal], axis=0)
+
     best_results_df = mejores_valores(df_combined.T)
-    
     guardar_dataframes_excel(df_combined, best_results_df, base_save_dir, funcion_nombre)
-    
+        
     funcion_dir = os.path.join(base_save_dir, kernel_name)
     os.makedirs(funcion_dir, exist_ok=True)
-    
+        
     graficar_tiempos_ejecucion(df_combined.T, save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_combined.png'))
     graficar_tiempos_ejecucion(results_general.T, save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_generales.png'))
-    
+        
     excluded_columns = ['(1/1)', '(2/2)', '(4/4)']
     columns = [col for col in df_combined.T.columns if col not in excluded_columns]
     graficar_tiempos_ejecucion(df_combined.T, columns_to_plot=columns, 
-                               save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_optimos.png'))
+                                save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_optimos.png'))
     
     return df_combined, best_results_df
 
