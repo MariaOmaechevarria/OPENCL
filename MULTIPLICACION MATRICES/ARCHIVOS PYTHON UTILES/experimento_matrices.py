@@ -68,7 +68,7 @@ def aplicar_kernel_local_sizes(kernel_code: str, kernel_name: str, device_type: 
     results_df = pd.DataFrame(index=index, columns=columns)
 
     i = 1
-    while i <= 32:
+    while i <= 16:
         local_size = (i, i)
         dim = 2 if i == 1 else i
         while dim <= 8192:
