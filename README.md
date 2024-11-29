@@ -86,6 +86,8 @@ Se encuentran las siguientes subcarpetas:
   - RESULTADOS: resultados de los experimentos
 
 5. INTRUCCIONES EJECUTAR OPENCL.lib: Instrucciones para ejecutar opencl en google collab
-6. OBTEENR_INFORMACION_DISPOSITIVO: Para obtener informacion del dispositivo que se esta usando 
+6. OBTEENR_INFORMACION_DISPOSITIVO: Para obtener informacion del dispositivo que se esta usando
+7. RESULTADOS PORTATIL: Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil persoal
+8. multiplicacion_mat_opencl.cpp: Archivo de prueba en opencl de multiplicación matrices
       
       
