@@ -79,15 +79,19 @@ MatrixMul_kernel_localA_coallesced="""
 #KERNEL MULTIPLICACION MATRICES BASICO
 
 MatrixMul_kernel1="""__kernel void MatrixMul_kernel1(int dim, __global int* A, __global int* B, __global int* C) {
+    //Obtener IDs del work item
     int fila = get_global_id(0);
     int columna = get_global_id(1);
-
+    
+    //Inicializar resultado
     int resultado = 0;
-
+    
+    //Recorrer la fila y columna correspondiente
     for (int i = 0; i < dim; i++) {
         resultado += A[fila * dim + i] * B[i * dim + columna];
     }
-
+    
+    //Establecer resultado en C
     C[fila * dim + columna] = resultado;
 }
 """
