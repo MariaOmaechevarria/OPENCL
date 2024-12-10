@@ -51,21 +51,27 @@ __kernel void MatrixMul_Local_Memory(int N,__global float* A, __global float* B,
 MatrixMul_kernel_localA_coallesced="""
     __kernel void MatrixMul_kernel_localA_coallesced(int dim,__global float *A,__global float *B,__global float *C,__local float *lA)
 {
- //Get the index of the work-item
+ // Obtener la información de los índices
  int iCol = get_global_id(0);
  int iRow = get_global_id(1);
  int localIdx = get_local_id(0);
  int localSizex = get_local_size(0);
  
+ //Inicializar variable resultado
  float result = 0.0f;
+
+ //Obtener número de elementos para almacenar
  int numElements = dim/localSizex;
  
+ //Acceder a la memoria global y guardar en la memoria local en lA
  for(int i=0; i<numElements ; i++)
  {
     lA[i*localSizex + localIdx] = A[iRow*dim + i*localSizex +localIdx];
  }
+ //Barrera para sincronizar las hebras
  barrier(CLK_LOCAL_MEM_FENCE);
  
+ //Bucle para realizar la mulriplicación
  for(int i=0;i< dim;++i)
  {
          result += lA[i]*B[i*dim + iCol];
