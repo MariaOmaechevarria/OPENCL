@@ -6,7 +6,7 @@ import pyopencl as cl
 FUNCIONES COMUNES PARA MANIPULACIÓN DE MATRICES Y KERNELS EN OPENCL
 '''
 
-def preparacion_kernel(device_type, kernel_code, kernel_name):
+def preparacion_kernel2(device_type, kernel_code, kernel_name):
     """
     Configura el entorno OpenCL y compila un kernel.
 
@@ -29,6 +29,33 @@ def preparacion_kernel(device_type, kernel_code, kernel_name):
     kernel = cl.Kernel(program, kernel_name)
 
     return platform, device, context, command_queue, program, kernel
+
+def preparacion_kernel(device_type, kernel_code, kernel_name):
+    # Buscar una plataforma que tenga un dispositivo del tipo especificado
+    for platform in cl.get_platforms():
+        try:
+            device = platform.get_devices(device_type=device_type)[0]
+            print(f"Seleccionada plataforma: {platform}")
+            print(f"Seleccionado dispositivo: {device.name}")
+            break
+        except IndexError:
+            # Si no encuentra un dispositivo de ese tipo en la plataforma, sigue buscando
+            continue
+    else:
+        raise RuntimeError("No se encontró ninguna plataforma con el dispositivo especificado.")
+
+    # Crear contexto y cola de comandos
+    context = cl.Context([device])
+    command_queue = cl.CommandQueue(context, device=device, properties=cl.command_queue_properties.PROFILING_ENABLE)
+
+    # Crear el programa y compilarlo
+    program = cl.Program(context, kernel_code).build()
+
+    # Crear el kernel
+    kernel = cl.Kernel(program, kernel_name)
+
+    return platform, device, context, command_queue, program, kernel
+
 
 
 def establecer_args_kernel(kernel, args):
