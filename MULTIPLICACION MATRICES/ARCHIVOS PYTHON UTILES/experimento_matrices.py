@@ -55,7 +55,7 @@ APLICA UN KERNEL PARA DIFERENTES LOCAL SIZES CUADRADOS
 def aplicar_kernel_local_sizes(kernel_code: str, kernel_name: str, device_type: cl.device_type,
                                funcion_aplicar) -> pd.DataFrame:
     """
-    Aplica un kernel para tamaños locales cuadrados (1x1, 2x2, ..., 32x32) y calcula los tiempos de ejecución.
+    Aplica un kernel para tamaños locales cuadrados (1x1, 2x2, ..., 16x16) y calcula los tiempos de ejecución.
 
     :param kernel_code: Código fuente del kernel.
     :param kernel_name: Nombre del kernel.
@@ -63,7 +63,7 @@ def aplicar_kernel_local_sizes(kernel_code: str, kernel_name: str, device_type: 
     :param funcion_aplicar: Función que aplica el kernel y devuelve el tiempo de ejecución.
     :return: DataFrame con los tiempos de ejecución para cada tamaño local y dimensión.
     """
-    index = [(f"({2 ** i}/{2 ** i})" if i != 0 else "(1/1)") for i in range(0, 5)]
+    index = [(f"({2 ** i}/{2 ** i})" if i != 0 else "(1/1)") for i in range(0, 4)]
     columns = [2 ** i for i in range(1, 14)]  # Dimensiones de 2 a 8192
     results_df = pd.DataFrame(index=index, columns=columns)
 
