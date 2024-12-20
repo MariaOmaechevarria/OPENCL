@@ -489,7 +489,7 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
         aplicar_filtro_func = funciones[i]
 
         for j in range(len(filtros1)):
-            if kernel_name == "kernel_filter_color_local4":
+            if kernel_name == "kernel_filter_color_local3":
                 filtro = filtros1[j]
                 try:
                     imagen_resultante, exec_time = aplicar_filtro_func(
@@ -525,12 +525,8 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
     guardar_dataframe_excel(df,save_path)
 
     # Renombrar el índice
-    df.index = ['filtro 3x3', 'filtro 5x5', 'filtro 7x7', 'filtro 9x9', 
-    'filtro 11x11', 'filtro 13x13', 'filtro 15x15', 
-    'filtro 16x16', 'filtro 17x17', 'filtro 19x19', 
-    'filtro 21x21', 'filtro 23x23', 'filtro 25x25', 
-    'filtro 27x27', 'filtro 29x29', 'filtro 31x31', 
-    'filtro 33x33']
+    df.index = [str(i) for i in range(1, 33)]
+
 
 
 
@@ -542,7 +538,7 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
 
     # Configurar el gráfico
     plt.title('Comparación de Tiempos de Ejecución por Kernel')
-    plt.xlabel('Filtros')
+    plt.xlabel('Radio del Filtro')
     plt.ylabel('Tiempo de Ejecución (s)')
     plt.legend(title='Kernels')
     plt.xticks(rotation=45)
