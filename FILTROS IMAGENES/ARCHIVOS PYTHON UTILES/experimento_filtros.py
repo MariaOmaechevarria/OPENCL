@@ -534,7 +534,17 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
     # Crear gráfico de líneas
     plt.figure(figsize=(10, 6))
     for column in df.columns:
-     plt.plot(df.index, df[column], marker='o', label=column)
+        if column=='kernel_filter_color_local3':
+           label='Kernel Memoria Local'
+           
+
+        elif column=="kernel_filter_color_local_rectangular":
+           label='Kernel Memoria Local Separado'
+
+        else:
+            label='Kernel Color Separado'
+            
+        plt.plot(df.index, df[column], marker='o', label=label)
 
     # Configurar el gráfico
     plt.title('Comparación de Tiempos de Ejecución por Kernel')
