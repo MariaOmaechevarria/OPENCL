@@ -55,7 +55,7 @@ uint sigma1(uint x) {
 
 // Implementación de SHA-256
 
-void loc_sha256(__private const unsigned char *input, unsigned long len, __private uint *output) {
+void sha256(__private const unsigned char *input, unsigned long len, __private uint *output) {
     uint w[64];
     size_t bloques = (len / 64) + (len % 64 ? 1 : 0);
     
@@ -117,7 +117,7 @@ void loc_sha256(__private const unsigned char *input, unsigned long len, __priva
 // Kernel principal
 
 __kernel void kernel_mining(
-    __global unsigned char *block_raw,
+    __global unsigned char *block,
     __global uint *target,
     __global uint *nonce,
     __global uint *debug_hash
@@ -129,17 +129,17 @@ __kernel void kernel_mining(
     uint cur_nonce = get_global_id(0);
 
     //Variable auxiliar para almacenar el mensaje
-    __private unsigned char my_raw[128] = {0};
+    __private unsigned char mensaje[128] = {0};
 
     //Copiar el mensaje a la variable auxiliar
-    for (int i = 0; i < 80; i++) my_raw[i] = block_raw[i];
+    for (int i = 0; i < 80; i++) mensaje[i] = block[i];
 
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
      if (*nonce != 0xFFFFFFFF) return;
     
     //Añadir el nonce a la variable auxiliar que almcena el mensaje
     for (size_t i = 0; i < 4; i++) {
-        my_raw[80 + i] = (cur_nonce >> (8 * i)) & 0xFF;
+        mensaje[80 + i] = (cur_nonce >> (8 * i)) & 0xFF;
     }
 
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
@@ -149,7 +149,7 @@ __kernel void kernel_mining(
     uint hash[8] = {0};
 
     //Calcular el hash SHA256
-    loc_sha256(my_raw, 128, hash);
+    sha256(mensaje, 128, hash);
 
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
      if (*nonce != 0xFFFFFFFF) return;

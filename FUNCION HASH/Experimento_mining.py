@@ -3,7 +3,8 @@ import numpy as np
 import os
 import pandas as pd
 import struct
-from Mineria_GPU_def import kernel_mining, mining_GPU, validate_nonce
+from Mineria_GPU_def import  mining_GPU, validate_nonce
+import kernel_mining
 import matplotlib.pyplot as plt
 
 
