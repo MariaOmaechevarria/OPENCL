@@ -198,6 +198,13 @@ def experimento_matrices(funcion_aplicar, kernel_code: str, kernel_name: str, de
     graficar_tiempos_ejecucion(df_combined.T, columns_to_plot=columns, 
                                 save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_optimos.png'))
     
+    dimensiones_a_incluir = [256, 512, 1024, 2048, 4096, 8192]
+    data_filtrada = df_combined.loc[df_combined.index.intersection(dimensiones_a_incluir)]
+    graficar_tiempos_ejecucion(data_filtrada.T, columns_to_plot=columns, 
+                           save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_optimos_2.png'))
+
+
+    
     return df_combined, best_results_df
 
 
