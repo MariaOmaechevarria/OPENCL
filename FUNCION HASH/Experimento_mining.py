@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import struct
 from Mineria_GPU_def import  mining_GPU, validate_nonce
-import kernel_mining
+import kernel_mining as kernel
 import matplotlib.pyplot as plt
 
 
@@ -68,7 +68,7 @@ def experimento_global_sizes(
     # Realizar experimentos
     for global_size in global_sizes:
         for local_size in local_sizes:
-            exec_time, result_nonce, hash_value = mining_GPU(kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
+            exec_time, result_nonce, hash_value = mining_GPU(kernel.kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
             results_dict[global_size[0]].append(exec_time)
 
     # Convertir resultados a DataFrame
@@ -136,7 +136,7 @@ def comparacion_targets2(path: str) -> None:
 
     for target in targets:
         for local_size in local_sizes:
-            exec_time, result_nonce, hash_value = mining_GPU(kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
+            exec_time, result_nonce, hash_value = mining_GPU(kernel.kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
             results_dict[tuple(target)].append(exec_time)
 
     # Convertir el diccionario a DataFrame
@@ -173,10 +173,30 @@ def comparacion_targets2(path: str) -> None:
     print(f"Gráfico guardado en: {plt_path}")
     plt.show()
 
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-import os
+
+def array_hex_to_scientific_notation(hex_array: np.ndarray) -> str:
+    """
+    Convierte un array de números hexadecimales en un número entero 
+    y lo devuelve en notación científica.
+    
+    Args:
+        hex_array (np.ndarray): Array de números hexadecimales (dtype=np.uint32).
+    
+    Returns:
+        str: Número en notación científica.
+    """
+    if hex_array.dtype != np.uint32:
+        raise ValueError("El array debe ser de tipo np.uint32")
+    
+    # Convertir los valores del array a un único entero
+    result = 0
+    for i, value in enumerate(reversed(hex_array)):
+        result += int(value) << (32 * i)
+    
+    # Convertir a notación científica
+    scientific_notation = f"{result:.5e}"
+    return scientific_notation
+
 
 def comparacion_targets(path: str) -> None:
     """
@@ -196,8 +216,8 @@ def comparacion_targets(path: str) -> None:
         np.array([0x000FFFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
         np.array([0x0000FFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
         np.array([0x00000FFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x000000FF] + [0xFFFFFFFF] * 7, dtype=np.uint32)
-    ]
+        np.array([0x000000FF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
+         np.array([0x0000000F] + [0x0FFFFFFF] * 7, dtype=np.uint32)]
 
     block = bytearray(80)
     global_size = (2**20,)
@@ -210,7 +230,7 @@ def comparacion_targets(path: str) -> None:
 
     for target in targets:
         for local_size in local_sizes:
-            exec_time, result_nonce, hash_value = mining_GPU(kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
+            exec_time, result_nonce, hash_value = mining_GPU(kernel.kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
             results_dict[tuple(target)].append(exec_time)
 
     # Convertir el diccionario a DataFrame
@@ -218,7 +238,7 @@ def comparacion_targets(path: str) -> None:
     df.index.name = 'Local Size'
 
     # Convertir las columnas (targets) a una representación más legible en notación científica
-    target_labels = [f"{target[0]:d} x 10^{int(np.log10(target[0]))}" for target in targets]
+    target_labels = [ str(array_hex_to_scientific_notation(target)) for target in targets]
     df.columns = target_labels
 
     # Guardar resultados en Excel

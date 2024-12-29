@@ -2,7 +2,7 @@ import pyopencl as cl
 import numpy as np
 import hashlib
 import struct
-import kernel_mining
+
 
 
 # Validación del nonce
@@ -82,33 +82,32 @@ def mining_GPU(
 
     # Compilación del kernel
     program = cl.Program(context, kernel_code).build()  # Compilar el código OpenCL
-    kernel = program.__getattr__(kernel_name)  # Obtener el kernel por su nombre
+    kernel = cl.Kernel(program, kernel_name)
+  
     kernel.set_arg(0, block_buffer)
     kernel.set_arg(1, target_buffer)
     kernel.set_arg(2, nonce_buffer)
     kernel.set_arg(3, debug_hash_buffer)
 
-    # Ejecución en múltiples iteraciones
-    for iteration in range(0):
-        # Ejecutar kernel
-        event = cl.enqueue_nd_range_kernel(command_queue, kernel, global_size, local_size)
-        event.wait()  # Esperar a que termine la ejecución
+    
+    # Ejecutar kernel
+    event = cl.enqueue_nd_range_kernel(command_queue, kernel, global_size, local_size)
+    event.wait()  # Esperar a que termine la ejecución
 
-        # Leer los resultados desde la GPU
-        cl.enqueue_copy(command_queue, nonce, nonce_buffer)
-        cl.enqueue_copy(command_queue, debug_hash, debug_hash_buffer)
+    # Leer los resultados desde la GPU
+    cl.enqueue_copy(command_queue, nonce, nonce_buffer)
+    cl.enqueue_copy(command_queue, debug_hash, debug_hash_buffer)
 
-        # Medir el tiempo de ejecución
-        exec_time = 1e-9 * (event.profile.end - event.profile.start)
+    # Medir el tiempo de ejecución
+    exec_time = 1e-9 * (event.profile.end - event.profile.start)
 
-        # Validar el nonce encontrado
-        if nonce[0] != 0xFFFFFFFF:
-            is_valid, hash_value = validate_nonce(block, nonce[0], int.from_bytes(target.tobytes(), byteorder='big'))
-            if is_valid:
-                return exec_time, nonce[0], hash_value  # Retornar si es válido
+    # Validar el nonce encontrado
+    if nonce[0] != 0xFFFFFFFF:
+        is_valid, hash_value = validate_nonce(block, nonce[0], int.from_bytes(target.tobytes(), byteorder='big'))
+        #is_valid=True
+        if is_valid:
+            return exec_time, nonce[0], hash_value  # Retornar si es válido
 
-        # Ajustar el rango de nonces para la siguiente iteración
-        block[76:80] = struct.pack('<I', int.from_bytes(block[76:80], 'little') + global_size[0])
 
     # Si no se encuentra un nonce válido después de todas las iteraciones
     print("No se encontró un nonce válido.")
