@@ -86,7 +86,7 @@ def aplicar_kernel_local_sizes(kernel_code: str, kernel_name: str, device_type: 
 '''
 GRAFICA LOS TIEMPOS DE EJECUCIÓN DESDE UN DATAFRAME
 '''
-def graficar_tiempos_ejecucion(data: pd.DataFrame, columns_to_plot: list[str] = None, save_path: str = None):
+def graficar_tiempos_ejecucion(data: pd.DataFrame, columns_to_plot, rows_to_plot: list[int]=None, save_path: str = None):
     """
     Genera un gráfico de los tiempos de ejecución desde un DataFrame.
 
@@ -113,7 +113,7 @@ def graficar_tiempos_ejecucion(data: pd.DataFrame, columns_to_plot: list[str] = 
     plt.title('Tiempos de Ejecución por Tamaño de Trabajo')
     plt.xlabel('Dimensiones de las Matrices')
     plt.ylabel('Tiempo de Ejecución (segundos)')
-    ticks = [2 ** i for i in range(1, 14)]  # Ticks para dimensiones 2, 4, ..., 8192
+    ticks = rows_to_plot  # Ticks para dimensiones 2, 4, ..., 8192
     plt.xticks(ticks, labels=[str(t) for t in ticks], rotation=45)
     plt.xscale('log')  # Escala logarítmica en el eje X
     plt.gca().set_xticks(ticks)
@@ -190,18 +190,23 @@ def experimento_matrices(funcion_aplicar, kernel_code: str, kernel_name: str, de
     funcion_dir = os.path.join(base_save_dir, kernel_name)
     os.makedirs(funcion_dir, exist_ok=True)
         
-    graficar_tiempos_ejecucion(df_combined.T, save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_combined.png'))
-    graficar_tiempos_ejecucion(results_general.T, save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_generales.png'))
+    graficar_tiempos_ejecucion(df_combined.T, columns_to_plot=None,rows_to_plot=[2 ** i for i in range(1, 14)],save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_combined.png'))
+    graficar_tiempos_ejecucion(results_general.T,columns_to_plot=None,rows_to_plot=[2 ** i for i in range(1, 14)], save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_generales.png'))
         
     excluded_columns = ['(1/1)', '(2/2)', '(4/4)']
     columns = [col for col in df_combined.T.columns if col not in excluded_columns]
-    graficar_tiempos_ejecucion(df_combined.T, columns_to_plot=columns, 
+    graficar_tiempos_ejecucion(df_combined.T, columns_to_plot=columns, rows_to_plot=[2 ** i for i in range(1, 14)],
                                 save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_optimos.png'))
     
-    dimensiones_a_incluir = [256, 512, 1024, 2048, 4096, 8192]
-    data_filtrada = df_combined.loc[df_combined.index.intersection(dimensiones_a_incluir)]
-    graficar_tiempos_ejecucion(data_filtrada.T, columns_to_plot=columns, 
+    dimensiones_a_incluir = [512, 1024, 2048, 4096, 8192]
+    results_df_filtrado = df_combined[dimensiones_a_incluir] 
+
+    graficar_tiempos_ejecucion(results_df_filtrado.T, columns_to_plot=columns, rows_to_plot=[ 512, 1024, 2048, 4096, 8192],
                            save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_optimos_2.png'))
+    excluded_columns2=['(1/1)', '(2/2)', '(4/4)','(128/1)','(64/2)','(32/4)','(16/16)','(16/8)']
+    columns2 = [col for col in df_combined.T.columns if col not in excluded_columns2]
+    graficar_tiempos_ejecucion(results_df_filtrado.T, columns_to_plot=columns2, rows_to_plot=[ 512, 1024, 2048, 4096, 8192],
+                           save_path=os.path.join(funcion_dir, 'tiempos_ejecucion_optimos_3.png'))
 
 
     

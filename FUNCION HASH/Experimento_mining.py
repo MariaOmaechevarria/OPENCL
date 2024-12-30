@@ -217,7 +217,7 @@ def comparacion_targets(path: str) -> None:
         np.array([0x0000FFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
         np.array([0x00000FFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
         np.array([0x000000FF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-         np.array([0x0000000F] + [0x0FFFFFFF] * 7, dtype=np.uint32)]
+        np.array([0x0000000F] + [0x00FFFFFF] * 7, dtype=np.uint32)]
 
     block = bytearray(80)
     global_size = (2**20,)
