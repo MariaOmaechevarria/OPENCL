@@ -50,7 +50,7 @@ def mining_GPU(
 ) -> tuple[float | None, int | None, bytes | None]:
     """
     Ejecuta minería utilizando un kernel OpenCL en la GPU.
-    Realiza múltiples intentos ajustando el rango de nonces entre iteraciones.
+    
 
     Inputs:
     - kernel_code (str): Código del kernel OpenCL.

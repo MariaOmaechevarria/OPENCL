@@ -21,8 +21,11 @@ import mult_matrices_basica_opencl as opencl
 import experimentos_cuda as ex
 '''
 
+#Importar libreria
 import os
-import experimentos_cuda as ex
+
+#Archivo con funciones experimentos cuda/opencl
+import funciones_experimentos_cuda as ex
 
 #Ruta del archivo (MODIFICAR)
 path="C:/Users/Eevee/OPENCL/"

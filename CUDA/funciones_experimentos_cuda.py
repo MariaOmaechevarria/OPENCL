@@ -3,16 +3,18 @@ ARCHIVO CON FUNCIONES PARA COMPARAR OPENCL Y CUDA
 '''
 
 
-
+#Librerias a importar
 import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import math
-
 import pyopencl as cl
 
+#Archivo con funcion cuda
 import mult_matrices_basico_cuda as cuda
+
+#Archivo con funcion opencl
 import mult_matrices_basica_opencl as opencl
 
 
@@ -49,7 +51,7 @@ def guardar_dataframe_excel(resultados: pd.DataFrame, base_save_dir: str, funcio
 
     print(f"DataFrame guardado en {excel_save_path}")
 
-
+#Funcion para guardar 2 dataframes en formato excel
 def guardar_dataframes_excel(
     resultados: pd.DataFrame,
     best_results_df: pd.DataFrame,

@@ -1,10 +1,15 @@
+'''
+ARCHIVO QUE EJECUTA EL KERNEL DE MULTIPLICACIÃ“N DE MATRICES EN OPENCL
+'''
+
+
 #include <CL/cl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <iostream>
 
-// KERNEL BÁSICO
+// KERNEL BASICO
 const char* MatrixMul_kernel = R"(
 __kernel void MatrixMul_kernel(int dim, __global int* A, __global int* B, __global int* C) {
     int fila = get_global_id(0);
@@ -47,7 +52,7 @@ int mult_matrices_basica(cl_device_type device_type) {
     // Crear kernel
     cl_kernel kernel = clCreateKernel(program, "MatrixMul_kernel", &err);
 
-    // Definir tamaño de las matrices
+    // Definir tamaï¿½o de las matrices
     cl_int dim = 1024;
 
     // Asignar memoria para las matrices
@@ -77,11 +82,11 @@ int mult_matrices_basica(cl_device_type device_type) {
     err = clSetKernelArg(kernel, 2, sizeof(cl_mem), &bufB);
     err = clSetKernelArg(kernel, 3, sizeof(cl_mem), &bufC);
 
-    // Definir el tamaño global y local
+    // Definir el tamaï¿½o global y local
     size_t global_size[2] = { dim, dim };
     size_t local_size[2] = { 8, 8 };
 
-    // Crear un evento para medir el tiempo de ejecución del kernel
+    // Crear un evento para medir el tiempo de ejecuciï¿½n del kernel
     cl_event event;
 
     // Encolar kernel
@@ -92,12 +97,12 @@ int mult_matrices_basica(cl_device_type device_type) {
     // Esperar a que se complete el kernel
     clFinish(command_queue);
 
-    // Medir el tiempo de ejecución del kernel
+    // Medir el tiempo de ejecuciï¿½n del kernel
     err = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start_time, NULL);
     err = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end_time, NULL);
 
     double execution_time = (end_time - start_time) / 1e9; // Convertir a segundos
-    printf("Tiempo de ejecución del kernel: %.3f s\n", execution_time);
+    printf("Tiempo de ejecuciï¿½n del kernel: %.3f s\n", execution_time);
 
     // Leer el buffer de salida y verificar resultados
     err = clEnqueueReadBuffer(command_queue, bufC, CL_TRUE, 0, sizeof(int) * dim * dim, C, 0, NULL, NULL);

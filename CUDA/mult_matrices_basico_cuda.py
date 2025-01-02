@@ -1,8 +1,13 @@
+'''
+MULTIPLICACIÓN DE MATRICES EN CUDA
+'''
+
+
+#Librerias a importar
 import os
 import pycuda.driver as cuda
 import pycuda.compiler as SourceModule
 import numpy as np
-import time
 
 # Configura las rutas necesarias para Visual Studio y el SDK de Windows
 vs_path = r"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.41.34120\bin\Hostx64\x64"

@@ -2,15 +2,19 @@
 ARCHIVO CON FUNCIONES PARA REALIZAR EXPERIMENTOS DE MINERÍA DE BLOQUES DEL BLOCKCHAIN
 '''
 
+#Librerias a importar
 import pyopencl as cl
 import numpy as np
 import os
 import pandas as pd
-
-
-from Mineria_GPU_def import  mining_GPU
-import kernel_mining as kernel
 import matplotlib.pyplot as plt
+
+#Funcion que aplica kernel mineria
+from Mineria_GPU_def import  mining_GPU
+
+#Kernel mineria
+import kernel_mining as kernel
+
 
 
 # FUNCION PARA ALMACENAR DATA FRAMES EN FORMATO EXCEL, GUARDA EL DATA FRAME RESULTADOS Y EL DATA FRAME MEJORES RESULTADOS

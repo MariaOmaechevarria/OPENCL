@@ -1,4 +1,6 @@
-
+'''
+KERNEL MINERIA DE UN BLOQUE DEL BLOCKCHAIN
+'''
 kernel_mining = """
 
 //Constantes necesarias para SHA256
