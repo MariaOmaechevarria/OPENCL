@@ -1,7 +1,12 @@
+'''
+ARCHIVO CON LA FUNCION PARA EJECUTAR EL KERNEL DE MINERÍA DE UN BLOQUE DEL BLOCKCHAIN
+'''
+
+
 import pyopencl as cl
 import numpy as np
 import hashlib
-import struct
+
 
 
 

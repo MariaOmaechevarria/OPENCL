@@ -1,9 +1,14 @@
+'''
+ARCHIVO CON FUNCIONES PARA REALIZAR EXPERIMENTOS DE MINERÍA DE BLOQUES DEL BLOCKCHAIN
+'''
+
 import pyopencl as cl
 import numpy as np
 import os
 import pandas as pd
-import struct
-from Mineria_GPU_def import  mining_GPU, validate_nonce
+
+
+from Mineria_GPU_def import  mining_GPU
 import kernel_mining as kernel
 import matplotlib.pyplot as plt
 
@@ -37,6 +42,7 @@ def guardar_dataframes_excel(resultados: pd.DataFrame, base_save_dir: str, funci
     
     print(f"DataFrames guardados y formateados en Excel en {excel_save_path}")
 
+#FUNCION PARA EXPERIMENTAR CON DISTINTOS GLOBAL SIZES PARA MINAR UN BLOQUE CON UN TARGET DADO
 
 def experimento_global_sizes(
     path: str, 
@@ -103,76 +109,7 @@ def experimento_global_sizes(
     print(f"Gráfico guardado en: {plt_path}")
     plt.show()
 
-
-def comparacion_targets2(path: str) -> None:
-    """
-    Compara diferentes objetivos (targets) y mide los tiempos de ejecución.
-
-    Inputs:
-    - path (str): Ruta base donde se guardarán los resultados.
-
-    Outputs:
-    - None: Genera gráficos y guarda resultados en Excel.
-    """
-    # Lista de objetivos con diferentes niveles de dificultad
-    targets = [
-        np.array([0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF], dtype=np.uint32),  # Mínima dificultad
-        np.array([0x7FFFFFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x00FFFFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x000FFFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x0000FFFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x00000FFF] + [0xFFFFFFFF] * 7, dtype=np.uint32),
-        np.array([0x000000FF] + [0xFFFFFFFF] * 7, dtype=np.uint32)
-    ]
-
-    block = bytearray(80)
-    global_size = (2**20,)
-    kernel_name = "kernel_mining"
-    device_type = cl.device_type.GPU
-    local_sizes = [(1,), (2,), (4,), (8,), (16,), (32,), (64,), (128,)]
-
-    # Diccionario para almacenar resultados
-    results_dict = {tuple(target): [] for target in targets}
-
-    for target in targets:
-        for local_size in local_sizes:
-            exec_time, result_nonce, hash_value = mining_GPU(kernel.kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
-            results_dict[tuple(target)].append(exec_time)
-
-    # Convertir el diccionario a DataFrame
-    df = pd.DataFrame(results_dict, index=[ls[0] for ls in local_sizes])
-    df.index.name = 'Local Size'
-
-    # Convertir las columnas (targets) a una representación más legible
-    target_labels = [f"0x{target[0]:08X}" for target in targets]
-    df.columns = target_labels
-
-    # Guardar resultados en Excel
-    output_dir = os.path.join(path, "FUNCION HASH/RESULTADOS")
-    os.makedirs(output_dir, exist_ok=True)
-    guardar_dataframes_excel(df, output_dir, 'mining_target')
-
-    # Generar el gráfico
-    plt.figure(figsize=(19, 8))
-    for i, local_size in enumerate(local_sizes):
-        plt.plot(df.columns, df.iloc[i], marker='o', label=f'Local Size {local_size[0]}')
-
-    plt.xlabel('Target (Hexadecimal)')
-    plt.ylabel('Execution Time (s)')
-    plt.title('Execution Time vs Targets for Different Local Sizes')
-    plt.legend(title='Local Sizes')
-    plt.grid(True)
-
-    # Ajustar escala del eje X
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-
-    # Guardar el gráfico
-    plt_path = os.path.join(output_dir, "execution_time_target_plot.png")
-    plt.savefig(plt_path)
-    print(f"Gráfico guardado en: {plt_path}")
-    plt.show()
-
+#FUNCION QUE CONVUERTE UN ARRAY EN NOTACION CIENTIFICA , USADO PARA LOS TARGETS
 
 def array_hex_to_scientific_notation(hex_array: np.ndarray) -> str:
     """
@@ -196,6 +133,9 @@ def array_hex_to_scientific_notation(hex_array: np.ndarray) -> str:
     # Convertir a notación científica
     scientific_notation = f"{result:.5e}"
     return scientific_notation
+
+
+#FUNCION QUE COMPARA DISTINTOS TARGETS EN LA MINERÍA DE UN BLOQUE DEL BLOCKCHAIN CON UN GLOBAL SIZE FIJADO
 
 
 def comparacion_targets(path: str) -> None:
