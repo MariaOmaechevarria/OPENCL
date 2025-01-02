@@ -1,14 +1,20 @@
-import pycuda.driver as cuda
-import pycuda.compiler as SourceModule
+'''
+ARCHIVO CON FUNCIONES PARA COMPARAR OPENCL Y CUDA
+'''
+
+
+
 import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
-from collections import defaultdict
+import math
+
 import pyopencl as cl
+
 import mult_matrices_basico_cuda as cuda
 import mult_matrices_basica_opencl as opencl
-import math
+
 
 
 # FUNCIONES PARA GUARDAR DATAFRAMES EN EXCEL

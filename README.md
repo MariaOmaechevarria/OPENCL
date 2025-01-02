@@ -13,7 +13,7 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
        - experimentos_cuda.py: Funciones para crear tablas, graficos y ejecutar los kernels anteriores para realizar dos experimentos.
              1.Comparar cuda vs opencl
              2- Probar distintos local sizes para obtener los tiempos en cuda
-       - CUDA_EXPERIMENTOS.ipynb : Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, subdividida en dos carpetas, una 
+       - cuda_experimentos.py : Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta    de       RESULTADOS, subdividida en dos carpetas, una 
                para cada experimento. Hay una tabla y un grafico para cada una.
 
 2. FILTROS IMAGENES
@@ -86,8 +86,8 @@ Se encuentran las siguientes subcarpetas:
   - RESULTADOS: resultados de los experimentos
 
 5. INTRUCCIONES EJECUTAR OPENCL: Instrucciones para ejecutar opencl en google collab
-6. OBTENENER_INFORMACION_DISPOSITIVO: Archivo python para obtener informacion del dispositivo que se esta usando
-7. RESULTADOS PORTATIL: Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil persoal
+6. OBTENER_INFORMACION_DISPOSITIVO: Archivo python para obtener informacion del dispositivo que se esta usando
+7. RESULTADOS PORTATIL: Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil personal
 8. OPECNL_SCRIPTS: Archivos con codigos en OpenCL(NO PYOPENCL)
     - Archivo de prueba en opencl de multiplicación matrices
       
