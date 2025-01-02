@@ -5,18 +5,19 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
 
 # CARPETAS Y ARCHIVOS
 
-1. CUDA 
-   Podemos encontrar los siguientes archivos.
+1. **CUDA**
+   
+    Conjunto de archivos con el objetivo de comparar la ejecución de la multiplicación de matrices en CUDA y en OpenCL. Los archivos son los siguientes:
+   - **mult_matrices_basico_cuda.py :** Kernel de multiplicacion basica en cuda y la funcion en python para ejecutar el kernel para unos argumentos dados
+   - **mult_matrices_basico_opencl.py :** Kernel de multiplicacion basica en opencl y la funcion en python para ejecutar el kernel para unos argumentos dados
+   - **funciones_experimentos_cuda.py:** Funciones para crear tablas, graficos y ejecutar los kernels anteriores para realizar dos experimentos.
+     - Comparar cuda vs opencl
+     
+     - Probar distintos local sizes para obtener los tiempos en cuda
+   - **ejecutar_cuda_experimentos.py (ARCHIVO A EJECUTAR) :** Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, 
+         subdividida en dos carpetas, una para cada experimento. 
 
-       - **mult_matrices_basico_cuda.py :** Kernel de multiplicacion basica en cuda y la funcion en python para ejecutar el kernel para unos argumentos dados
-       - **mult_matrices_basico_opencl.py :** Kernel de multiplicacion basica en opencl y la funcion en python para ejecutar el kernel para unos argumentos dados
-       - **funciones_experimentos_cuda.py:** Funciones para crear tablas, graficos y ejecutar los kernels anteriores para realizar dos experimentos.
-             1.Comparar cuda vs opencl
-             2-Probar distintos local sizes para obtener los tiempos en cuda
-       - **ejecutar_cuda_experimentos.py (ARCHIVO EJECUTAR) :** Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, subdividida en dos carpetas, una 
-       para cada experimento. Hay una tabla y un grafico para cada una.
-
-2. FILTROS IMAGENES
+3. FILTROS IMAGENES
 
       Podemos encontrar las siguientes subcarpetas
 
@@ -49,23 +50,19 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
       - EXPERIMENTOS: Resultados de todos los experimentos anteriores
       - IMAGENES: Imagenes sobre las que se van a aplicar los filtros
 
-  3. FUNCION HASH
-     Podemos encontrar los siguientes archivos:
-        - SHA-512.py: Implementacion en pyopencl y python de la funcion SHA-512
+  3. **FUNCION HASH**
+     
+     En los siguientes archivos se encuentran funciones para realizar la minería de un bloque del blockchain en PyOpenCl. Los archivos son los siguientes:
+     
+        - **kernel_mining.py :** Kernel que mina un bloque dado
           
-        - SHA-256.cpp : Implementacion en C++ de la funcion SHA-256
+        - **ejecutar_kernel_mineria.py:** Funcion en python que ejecuta el kernel de mineria de un bloque del blockchain en PyOpencl
           
-        - SHA-256+NONCE.py: Implementacion de la funcion SHA-256 en opencl añadiendo un nonce cualquiera
-          
-        - Mineria_python.py: Funcion en python que realiza el proceso de mineria simulando el blockchain
-          
-        - Mineria_GPU_def.py: Kernel de  mineria simulando el block chain en OPENCL y funcion que ejecuta el kernel
-          
-        - Experimento_mining.py: Funciones para ejecutar el kernel de mineria y hacer pruebas, Se realizan dos experimentos:
-             1. Para un mismo target, probar distintos lcoal sizes y global sizes
+        - **funciones_experimento_mining.py:** Funciones para ejecutar el kernel de mineria y hacer pruebas, Se realizan dos experimentos:
+             1. Para un mismo target, probar distintos lcoal sizes y global sizes. 
              2. Fijado un global size, hacer pruebas con distintas combinaciones de local sizes y de targets
                 
-        -Experimento_hash_mining.ipynb: Ejecutar experimentos anteriores,resultados guardados en la carpeta RESULTADOS
+        -**ejecutar_experimento_mineria.py** Ejecutar experimentos anteriores,resultados guardados en la carpeta RESULTADOS
 
 4. MULTIPLICACION DE MATRICES:
 Se encuentran las siguientes subcarpetas:
@@ -85,10 +82,10 @@ Se encuentran las siguientes subcarpetas:
           
   - RESULTADOS: resultados de los experimentos
 
-5. INTRUCCIONES EJECUTAR OPENCL: Instrucciones para ejecutar opencl en google collab
-6. OBTENER_INFORMACION_DISPOSITIVO: Archivo python para obtener informacion del dispositivo que se esta usando
-7. RESULTADOS PORTATIL: Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil personal
-8. OPECNL_SCRIPTS: Archivos con codigos en OpenCL(NO PYOPENCL)
-    - Archivo de prueba en opencl de multiplicación matrices
+5. **INTRUCCIONES EJECUTAR OPENCL:**  Archivo notas que explica como ejecutar opencl en google collab
+6. **OBTENER_INFORMACION_DISPOSITIVO:** Archivo python para obtener informacion del dispositivo que se esta utilizando
+7. **RESULTADOS PORTATIL:** Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil personal
+8. **OPECNL_SCRIPTS:** Archivos con codigos en OpenCL(NO PYOPENCL)
+    - multiplicacion_mat_opencl.cpp : Archivo de prueba en opencl de multiplicación matrices
       
       
