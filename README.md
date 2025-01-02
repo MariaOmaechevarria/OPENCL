@@ -5,16 +5,16 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
 
 # CARPETAS Y ARCHIVOS
 
-1. CUDA
+1. CUDA 
    Podemos encontrar los siguientes archivos.
 
-       - mult_matrices_basico_cuda.py : Kernel de multiplicacion basica en cuda y la funcion en python para ejecutar el kernel para unos argumentos dados
-       - mult_matrices_opencl.py : Kernel de multiplicacion basica en opencl y la funcion en python para ejecutar el kernel para unos argumentos dados
-       - experimentos_cuda.py: Funciones para crear tablas, graficos y ejecutar los kernels anteriores para realizar dos experimentos.
+       - **mult_matrices_basico_cuda.py :** Kernel de multiplicacion basica en cuda y la funcion en python para ejecutar el kernel para unos argumentos dados
+       - **mult_matrices_basico_opencl.py :** Kernel de multiplicacion basica en opencl y la funcion en python para ejecutar el kernel para unos argumentos dados
+       - **funciones_experimentos_cuda.py:** Funciones para crear tablas, graficos y ejecutar los kernels anteriores para realizar dos experimentos.
              1.Comparar cuda vs opencl
-             2- Probar distintos local sizes para obtener los tiempos en cuda
-       - cuda_experimentos.py : Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta    de       RESULTADOS, subdividida en dos carpetas, una 
-               para cada experimento. Hay una tabla y un grafico para cada una.
+             2-Probar distintos local sizes para obtener los tiempos en cuda
+       - **ejecutar_cuda_experimentos.py (ARCHIVO EJECUTAR) :** Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, subdividida en dos carpetas, una 
+       para cada experimento. Hay una tabla y un grafico para cada una.
 
 2. FILTROS IMAGENES
 
