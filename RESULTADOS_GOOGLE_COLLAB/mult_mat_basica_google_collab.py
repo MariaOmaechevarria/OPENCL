@@ -1,7 +1,7 @@
 #ARCHIVO PARA EJECUTAR MULTIPLICACIÓN DE MATRICES BASICA EN PYOPENCL EN GOOGLE COLLAB (TANTO CPU COMO GPU)
 
 #NECESARIO PARA EJECUTAR PYOPENCL EN GOOGLE COLLAB (APROX 5 MINUTOS)
-"""
+
 
 !sudo apt update
 !sudo apt purge *nvidia* -y
@@ -11,7 +11,7 @@
 !pip install pyopencl
 !apt-get install -y pocl-opencl-icd ocl-icd-libopencl1
 
-"""
+
 #IMPORTAR LIBRERIAS Y FUNCIONES
 
 import pyopencl as cl

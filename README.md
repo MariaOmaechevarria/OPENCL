@@ -83,9 +83,17 @@ Se encuentran las siguientes subcarpetas:
   - RESULTADOS: resultados de los experimentos
 
 5. **INTRUCCIONES EJECUTAR OPENCL:**  Archivo notas que explica como ejecutar opencl en google collab
+
 6. **OBTENER_INFORMACION_DISPOSITIVO:** Archivo python para obtener informacion del dispositivo que se esta utilizando
-7. **RESULTADOS PORTATIL:** Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil personal
-8. **OPECNL_SCRIPTS:** Archivos con codigos en OpenCL(NO PYOPENCL)
+
+7. **RESULTADOS GOOGLE COLAB:** Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices en Google Colab GPU y CPU.
+  - **mult_mat_basica_google_collab.py:** Archivo  a ejecutar en Google Colab de multiplicación de matrices basica
+  - **Mult_Mat_Basica_CPU.csv:** Resultados CPU
+  - **Mult_Mat_Basica_GPU.csv:** Resultados GPU
+  
+8. **RESULTADOS PORTATIL:** Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil personal
+
+9. **OPECNL_SCRIPTS:** Archivos con codigos en OpenCL(NO PYOPENCL)
     - multiplicacion_mat_opencl.cpp : Archivo de prueba en opencl de multiplicación matrices
       
       
