@@ -1,8 +1,8 @@
 
 #KERNEL MULTIPLICACION MATRICES TILES
 
-MatrixMul_Local_Memory="""
-__kernel void MatrixMul_Local_Memory(int N,__global float* A, __global float* B, __global float* C, __local float* sh_A, __local float* sh_B) {
+MatrixMul_Local_Tiles="""
+__kernel void MatrixMul_Local_Tiles(int N,__global float* A, __global float* B, __global float* C, __local float* sh_A, __local float* sh_B) {
     // Obtener la información de los índices
     int by = get_group_id(1);  // blockIdx.y
     int bx = get_group_id(0);  // blockIdx.x
@@ -48,8 +48,8 @@ __kernel void MatrixMul_Local_Memory(int N,__global float* A, __global float* B,
 
 #KERNEL MULTIPLICACION MATRICES MEMORIA LOCAL A
 
-MatrixMul_kernel_localA_coallesced="""
-    __kernel void MatrixMul_kernel_localA_coallesced(int dim,__global float *A,__global float *B,__global float *C,__local float *lA)
+MatrixMul_kernel_local_A="""
+    __kernel void MatrixMul_kernel_local_A(int dim,__global float *A,__global float *B,__global float *C,__local float *lA)
 {
  // Obtener la información de los índices
  int iCol = get_global_id(0);
@@ -84,7 +84,7 @@ MatrixMul_kernel_localA_coallesced="""
 
 #KERNEL MULTIPLICACION MATRICES BASICO
 
-MatrixMul_kernel1="""__kernel void MatrixMul_kernel1(int dim, __global int* A, __global int* B, __global int* C) {
+MatrixMul_kernel="""__kernel void MatrixMul_kernel(int dim, __global int* A, __global int* B, __global int* C) {
     //Obtener IDs del work item
     int fila = get_global_id(0);
     int columna = get_global_id(1);
