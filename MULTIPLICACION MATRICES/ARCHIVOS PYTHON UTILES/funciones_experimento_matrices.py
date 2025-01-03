@@ -238,7 +238,7 @@ def experimento_matrices(funcion_aplicar, kernel_code: str, kernel_name: str, de
     """
     results_general = aplicar_kernel_local_sizes(kernel_code, kernel_name, device_type, funcion_aplicar)
 
-    if kernel_name=='MatrixMul_Local_Memory':
+    if kernel_name=='MatrixMul_Local_Tiles':
 
          df_combined=results_general
     else:
