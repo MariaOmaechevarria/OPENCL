@@ -64,7 +64,7 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
                 
         -**ejecutar_experimento_mineria.py** Ejecutar experimentos anteriores,resultados guardados en la carpeta RESULTADOS
 
-4. MULTIPLICACION DE MATRICES:
+4. **MULTIPLICACION DE MATRICES:**
    
    En los siguientes archivos se encuentran funciones para realizar la multiplicación de matrices en PyOpenCl. Los archivos son los siguientes:
 
