@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #Funcion que aplica kernel mineria
-from Mineria_GPU_def import  mining_GPU
+from ejecutar_kernel_mineria import  mining_GPU
 
 #Kernel mineria
 import kernel_mining as kernel

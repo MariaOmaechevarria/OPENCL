@@ -128,7 +128,7 @@ def comparar(path: str) -> None:
         grid = (dim // 8, dim // 8)
 
         # Medir tiempos de OpenCL y CUDA
-        exec_time_cl, C_cl = opencl.mult_mat_basica(dim, local_size, device_type, opencl.MatrixMul_kernel1, "MatrixMul_kernel1", A, B)
+        exec_time_cl, C_cl = opencl.mult_mat_basica(dim, local_size, device_type, opencl.MatrixMul_kernel, "MatrixMul_kernel", A, B)
         exec_time_cuda, C_cuda = cuda.ejecutar_kernel(dim, A, B, block, grid)
 
         # Guardar resultados

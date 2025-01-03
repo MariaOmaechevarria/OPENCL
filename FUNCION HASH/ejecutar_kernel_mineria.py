@@ -113,7 +113,4 @@ def mining_GPU(
         if is_valid:
             return exec_time, nonce[0], hash_value  # Retornar si es válido
 
-
-    # Si no se encuentra un nonce válido después de todas las iteraciones
-    print("No se encontró un nonce válido.")
     return None, None, None
