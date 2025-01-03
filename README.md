@@ -69,32 +69,32 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
    En los siguientes archivos se encuentran funciones para realizar la multiplicación de matrices en PyOpenCl. Los archivos son los siguientes:
 
   
-  - **kernels_matrices.py:** Distintos kernels de multiplicacion de matrices
+    - **kernels_matrices.py:** Distintos kernels de multiplicacion de matrices
      
-  - **funciones_ejecutar_kernel_matrices.py:** distintas funciones para ejecutar los kernels de multiplicacion de matrices
+    - **funciones_ejecutar_kernel_matrices.py:**  funciones para ejecutar los kernels de multiplicacion de matrices
      
-  - **funciones_experimentos_matrices.py:** Funciones que calculan tablas y graficos para distintos experimentos de multiplicar matrices.
+    - **funciones_experimentos_matrices.py:** Funciones que calculan tablas y graficos para distintos experimentos de multiplicar matrices.
 
-  - **ejecutar_experimentos_matrices.py(A EJECUTAR):**  Archivo donde se ejecutan los experimentos del archivo anterior. 
+    - **ejecutar_experimentos_matrices.py(A EJECUTAR):**  Archivo donde se ejecutan los experimentos del archivo anterior. 
       
-      - Experimento 1 - Experimento_local_sizes : Para todos los kernels hacer pruebas de distintos local sizes para determianr el optimo, resutados en RESULTADOS en 
+       - Experimento 1 - Experimento_local_sizes : Para todos los kernels hacer pruebas de distintos local sizes para determianr el optimo, resutados en RESULTADOS en 
                subcarpetas con el nombre del kernel
 
-      - Experimento 2- Experimento_comparacion_kernels_matrices: Prueba distintos kernels con distintas matrices para obtener los mejores tiempos.Resultados se pueden 
+       - Experimento 2- Experimento_comparacion_kernels_matrices: Prueba distintos kernels con distintas matrices para obtener los mejores tiempos.Resultados se pueden 
                   encontrar en RESULTADOS /Comparacion kernels
 
-  - **comparar_3_gpus_cpu.py:** Archivo donde se compara la ejecución de todos loss dispositivos utilizados durante el proyecto.
+   - **comparar_3_gpus_cpu.py:** Archivo donde se compara la ejecución de todos los dispositivos utilizados durante el proyecto.
           
-  - **RESULTADOS:** resultados de los experimentos
+   - **RESULTADOS:** resultados de los experimentos
 
 5. **INTRUCCIONES EJECUTAR OPENCL:**  Archivo notas que explica como ejecutar opencl en google collab
 
 6. **OBTENER_INFORMACION_DISPOSITIVO:** Archivo python para obtener informacion del dispositivo que se esta utilizando
 
 7. **RESULTADOS GOOGLE COLAB:** Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices en Google Colab GPU y CPU.
-  - **mult_mat_basica_google_collab.py:** Archivo  a ejecutar en Google Colab de multiplicación de matrices basica
-  - **Mult_Mat_Basica_CPU.csv:** Resultados CPU
-  - **Mult_Mat_Basica_GPU.csv:** Resultados GPU
+   - **mult_mat_basica_google_collab.py:** Archivo  a ejecutar en Google Colab de multiplicación de matrices basica
+   - **Mult_Mat_Basica_CPU.csv:** Resultados CPU
+   - **Mult_Mat_Basica_GPU.csv:** Resultados GPU
   
 8. **RESULTADOS PORTATIL:** Carpeta donde se pueden encontrar los resultados de algunos experimentos de mult matrices y filtros ejecutados en mi portatil personal
 
