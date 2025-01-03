@@ -84,7 +84,7 @@ def mult_mat_basica(
         kernel.set_arg(i, arg)
 
     # Ejecutar el kernel
-    event = cl.enqueue_nd_range_kernel(command_queue, kernel_code, global_size, local_size)
+    event = cl.enqueue_nd_range_kernel(command_queue, kernel, global_size, local_size)
     event.wait()
 
     # Leer el buffer de salida
