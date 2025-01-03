@@ -65,22 +65,27 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
         -**ejecutar_experimento_mineria.py** Ejecutar experimentos anteriores,resultados guardados en la carpeta RESULTADOS
 
 4. MULTIPLICACION DE MATRICES:
-Se encuentran las siguientes subcarpetas:
+   
+   En los siguientes archivos se encuentran funciones para realizar la multiplicación de matrices en PyOpenCl. Los archivos son los siguientes:
 
-   - ARCHIVOS PYTHON UTILES: Se encuentras los siguientes archivos
-         - kernels_matrices.py: Distintos kernels de multiplicacion de matrices
+  
+  - **kernels_matrices.py:** Distintos kernels de multiplicacion de matrices
      
-         - funciones_matrices.py: distintas funciones para ejecutar los kernels de multiplicacion de matrices
+  - **funciones_ejecutar_kernel_matrices.py:** distintas funciones para ejecutar los kernels de multiplicacion de matrices
      
-         - experimentos_matrices.py: Funciones que calculan tablas y graficos para distintos experimentos de multiplicar matrices
+  - **funciones_experimentos_matrices.py:** Funciones que calculan tablas y graficos para distintos experimentos de multiplicar matrices.
 
-         - Experimento_comparacion_kernels_matrices: Prueba distintos kernels con distintas matrices para obtener los mejores tiempos.Resultados se pueden 
+  - **ejecutar_experimentos_matrices.py(A EJECUTAR):**  Archivo donde se ejecutan los experimentos del archivo anterior. 
+      
+      - Experimento 1 - Experimento_local_sizes : Para todos los kernels hacer pruebas de distintos local sizes para determianr el optimo, resutados en RESULTADOS en 
+               subcarpetas con el nombre del kernel
+
+      - Experimento 2- Experimento_comparacion_kernels_matrices: Prueba distintos kernels con distintas matrices para obtener los mejores tiempos.Resultados se pueden 
                   encontrar en RESULTADOS /Comparacion kernels
 
-        - Experimento_local_sizes.ipynb: Para todos los kernels hacer pruebas de distintos local sizes para determianr el optimo, resutados en RESULTADOS en 
-               subcarpetas con el nombre del kernel
+  - **comparar_3_gpus_cpu.py:** Archivo donde se compara la ejecución de todos loss dispositivos utilizados durante el proyecto.
           
-  - RESULTADOS: resultados de los experimentos
+  - **RESULTADOS:** resultados de los experimentos
 
 5. **INTRUCCIONES EJECUTAR OPENCL:**  Archivo notas que explica como ejecutar opencl en google collab
 
