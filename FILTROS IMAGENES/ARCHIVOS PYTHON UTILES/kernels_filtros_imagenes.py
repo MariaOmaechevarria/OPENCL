@@ -240,8 +240,8 @@ __kernel void kernel_filter_color_sobel(__global uchar* imagen_in,__global uchar
 
 #KERNEL FILTRO MEDIAN:
 
-kernel_median="""
-__kernel void kernel_median(__global uchar* imagen_in, __global uchar* imagen_out, int dim, int ancho, int alto) {
+kernel_filter_median="""
+__kernel void kernel_filter_median(__global uchar* imagen_in, __global uchar* imagen_out, int dim, int ancho, int alto) {
 
     int fila = get_global_id(0);
     int columna = get_global_id(1);
@@ -321,8 +321,8 @@ __kernel void kernel_median(__global uchar* imagen_in, __global uchar* imagen_ou
 
 #KERNEL MEMORIA LOCAL INEFICIENTE
 
-kernel_filter_color_local="""
-__kernel void kernel_filter_color_local(
+kernel_filter_color_local_ineficiente="""
+__kernel void kernel_filter_color_local_ineficiente(
     __global uchar* imagen_in, 
     __global uchar* imagen_out, 
     __constant float* filtro, 
@@ -418,8 +418,8 @@ __kernel void kernel_filter_color_local(
 
 # KERNEL MEMORIA LOCAL HEBRA MAESTRA
 
-kernel_filter_color_local2 = """
-__kernel void kernel_filter_color_local2(
+kernel_filter_color_local_hebra_maestra = """
+__kernel void kernel_filter_color_local_hebra_maestra(
     __global uchar* imagen_in, 
     __global uchar* imagen_out, 
     __constant float* filtro, 
@@ -514,7 +514,7 @@ __kernel void kernel_filter_color_local2(
 
 #KERNEL FILTER MEMORIA LOCAL TRABAJO DIVIDIDO ENTRE HEBRAS
 
-kernel_filter_color_local3 = """__kernel void kernel_filter_color_local3(
+kernel_filter_color_local_organizado = """__kernel void kernel_filter_color_local_organizado(
     __global uchar* imagen_in, 
     __global uchar* imagen_out, 
     __constant float* filtro, 
@@ -607,7 +607,7 @@ kernel_filter_color_local3 = """__kernel void kernel_filter_color_local3(
 """
 #KERNEL FILTER MEMORIA LOCAL TRABAJO DIVIDIDO ENTRE HEBRAS DONDE SE GUARADN RGB A LA VEZ
 
-kernel_filter_color_local4 = """__kernel void kernel_filter_color_local4(
+kernel_filter_color_local_organizado_junto = """__kernel void kernel_filter_color_local_organizado_junto(
     __global uchar* imagen_in, 
     __global uchar* imagen_out, 
     __constant float* filtro, 

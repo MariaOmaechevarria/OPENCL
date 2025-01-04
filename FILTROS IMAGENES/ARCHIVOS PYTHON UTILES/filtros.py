@@ -1,7 +1,15 @@
+'''
+ARCHIVO CON NUCLEOS DE CONVOLUCIONES (FILTROS) DE DISTINTOS TAMAÑOS
+'''
+
+
+#lIBRERIA 
 import numpy as np
 
 
-#FILTROS 3X3:
+'''FILTROS DE TAMAÑO 3X3 '''
+
+#Filtro mean(medio): Suavizar imágenes´
 
 filtro_mean=np.array([
     [1/9, 1/9, 1/9],
@@ -9,34 +17,23 @@ filtro_mean=np.array([
     [1/9, 1/9, 1/9]
 ], dtype=np.float32)
 
+#Filtro mean(medio) separado: Suavizar imágenes´
 filtro_meanX=np.array([[1/3,1/3,1/3]], dtype=np.float32)
 filtro_meanY=np.array([[1/3],[1/3],[1/3]], dtype=np.float32)
 
-filtro_gaussianH = np.array([[1/4, 2/4, 1/4]], dtype=np.float32)
-filtro_gaussianV = np.array([[1/4], [2/4], [1/4]], dtype=np.float32)
 
-#SUAVIZAR IMAGEN,ELIMINA LOS VALORES DE ALTAS FRECUENCIAS
+#Filtro gaussiano: Suaviza imágenes, eliminas altas frecuencias
 filtro_gaussiani=np.array([
     [1/16, 2/16, 1/16],
     [2/16, 4/16, 2/16],
     [1/16, 2/16, 1/16]
 ], dtype=np.float32)
 
-#ENFOCA
-filtro_enfoque=np.array([
-    [0, -1, 0],
-    [-1, 5, 1],
-    [0, -1, 0]
-], dtype=np.float32)
+#Filtro gaussiano separado
+filtro_gaussianH = np.array([[1/4, 2/4, 1/4]], dtype=np.float32)
+filtro_gaussianV = np.array([[1/4], [2/4], [1/4]], dtype=np.float32)
 
-#DESENFOCA
-filtro_desenfoque=np.array([
-    [1, 1, 1],
-    [1, 1, 1],
-    [1, 1, 1]
-], dtype=np.float32)
-
-#FILTRO SOBEL: DETECTA BORDES
+#FILTRO SOBEL: Detecta bordes
 
 filtro_sobel_X=np.array([
     [1, 0, -1],
@@ -53,7 +50,7 @@ filtro_sobel_Y=np.array([
 filtrosobelX=np.array([[1,0,-1]], dtype=np.float32)
 filtrosobelY=np.array([[1],[2],[1]], dtype=np.float32)
 
-#FILTRO 5X5
+'''FILTROS DE TAMAÑO 5X5 (SEPARADO Y NO)'''
 
 filtro_mean5x5=np.array([
     [1/25, 1/25, 1/25,1/25,1/25],
@@ -66,7 +63,7 @@ filtro_mean5x5=np.array([
 filtro_mean5X5X=np.array([[1/5, 1/5, 1/5,1/5,1/5]], dtype=np.float32)
 filtro_mean5X5Y=np.array([[1/5],[1/5],[1/5],[1/5],[1/5]], dtype=np.float32)
 
-#FILTRO 7X7
+'''FILTROS DE TAMAÑO 7X7 (SEPARADO Y NO)'''
 
 filtro_mean7x7 = np.array([
     [1/49, 1/49, 1/49, 1/49, 1/49, 1/49, 1/49],
@@ -80,7 +77,7 @@ filtro_mean7x7 = np.array([
 filtro_mean7x7Y = np.array([[1/7], [1/7], [1/7], [1/7], [1/7], [1/7], [1/7]], dtype=np.float32)
 filtro_mean7x7X = np.array([[1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]], dtype=np.float32)
 
-#FILTRO 9X9
+'''FILTROS DE TAMAÑO 9X9 (SEPARADO Y NO)'''
 
 filtro_mean9x9 = np.array([
     [1/81, 1/81, 1/81, 1/81, 1/81, 1/81, 1/81, 1/81, 1/81],
@@ -97,21 +94,15 @@ filtro_mean9x9X = np.array([[1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9]], dtyp
 filtro_mean9x9Y = np.array([[1/9], [1/9], [1/9], [1/9], [1/9], [1/9], [1/9], [1/9], [1/9]], dtype=np.float32)
 
 
-#FILTRO 16X16
+'''FILTROS DE TAMAÑO 16X16 (SEPARADO Y NO)'''
 filtro_mean16x16 = np.full((16, 16), 1/256, dtype=np.float32)  # 256 es 16*16
 
 filtro_mean16x16X = np.full((1, 16), 1/16, dtype=np.float32)  # Filtro X
 filtro_mean16x16Y = np.full((16, 1), 1/16, dtype=np.float32)  # Filtro Y
 
 
+'''FILTROS DE MAYOR TAMAÑO (SEPARADOS Y NO)'''
 
-# FILTROS 11X11 A 33X33
-
-import numpy as np
-
-# FILTROS DE RADIO 1 A 32 (TAMAÑOS DE FILTRO DE 3x3 A 64x64)
-
-import numpy as np
 
 # Función para crear filtros cuadrados en base al radio
 def crear_filtro_cuadrado(radio):
@@ -152,9 +143,6 @@ filtro_mean30 = crear_filtro_cuadrado(30)
 filtro_mean31 = crear_filtro_cuadrado(31)
 filtro_mean32 = crear_filtro_cuadrado(32)
 
-
-# Filtros 1D en X y Y (de radio 1 a 32)
-import numpy as np
 
 # Filtros 1D en X (de radio 1 a 32)
 filtro_mean1X = np.full((1, 3), 1/3, dtype=np.float32)

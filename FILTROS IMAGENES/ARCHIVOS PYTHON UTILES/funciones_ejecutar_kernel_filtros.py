@@ -1,7 +1,6 @@
 import numpy as np
 import pyopencl as cl
 from PIL import Image
-import os
 import time
 
 # FUNCIONES PARA APLICAR FILTROS
