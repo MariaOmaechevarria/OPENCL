@@ -207,3 +207,7 @@ def aplicar_kernel_local_sizes_completo() -> pd.DataFrame:
                 results_df.loc[f"Block ({block_x}/{block_y})", dim] = f"Error: {str(e)}"
 
     return results_df
+
+def experimento_matrices(save_path,funcion_nombre='kernel_cuda'):
+    results_df=aplicar_kernel_local_sizes_completo()
+    guardar_dataframe_excel(results_df,save_path,funcion_nombre)

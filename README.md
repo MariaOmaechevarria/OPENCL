@@ -14,41 +14,34 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
      - Comparar cuda vs opencl
      
      - Probar distintos local sizes para obtener los tiempos en cuda
-   - **ejecutar_cuda_experimentos.py (ARCHIVO A EJECUTAR) :** Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, 
+   - **ejecutar_cuda_experimentos.ypnb (ARCHIVO A EJECUTAR) :** Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, 
          subdividida en dos carpetas, una para cada experimento. 
 
 3. FILTROS IMAGENES
 
-      Podemos encontrar las siguientes subcarpetas
-
-      - ARCHIVOS PYTHON UTILES:
-     
-            - determinar_mejor-local_size.py: Determina los mejores local sizes segun la GPU usada
+   Conjunto de archivos con el objetivo de estudiar la aplicación de filtro en OpenCL. Los archivos son los siguientes:
         
-            -  filtros.py : Distintos filtros 8mean,gaussian,sobel) y de distintos tamaños
+   -  **filtros.py :** : Archivo con filtros mean,gaussian,sobel  de distintos tamaños
         
-            - kernels_filtros_imagenes.py: distintos kernels para aplicar filtros
+   - **kernels_filtros_imagenes.py:** Kernels para aplicar filtros
         
-            -  funciones_filtros.py: funciones para aplicar filtros ditintos, con o sin memoria local etc
+   -  **funciones_ejecutar_kernel_filtros.py:** funciones para aplicar filtros ditintos, con o sin memoria local etc
         
-            - experimento_filtros.py: Diversas funciones para realizar distintos experimentos, cada una se ejecuta en su correspondiente jupiter notebook. Obtienen 
-                graficos y data frames
-
-            - EXperimento_distintos_filtros_filtro_dividido_vs_no.ypinb: Experimento donde se comparan los tiempos de aplicar filtros de manera normal o de manera 
+   - **funciones_experimento_filtros.py:** Funciones para realizar experimentos de aplicación de filtros. Obtienen gráficas y tablas.
+   - **ejecutar_experimento_filtros.py( A EJECUTAR):** Archivo donde se ejecutan los 4 experimentos. Son los siguientes:
+   
+      - Experimento filtros divididos vs no: Experimento donde se comparan los tiempos de aplicar filtros de manera normal o de manera 
                   dividida para filtros cada vez mas grandes. Los resultados obtenidos se almacenan en RESULTADOS ,COMPARACION DE KERNELS , COMPARACION FILTROS
 
-            - Pruebas_filtros_local_sizes_GPU.yipnb: Experimento donde para distintos filtros(mean,sobel,gaussian) se calculan los tiempos de ejecucion para 
-               distintos tamaños de imagen y distintos local sizes. Resultados obtenidos estan en EXPERIEMNTOS,RESULTADOS ,filtro_gaussian,filtro_mean y 
-                       filtro_sobel
+      - Experimento local size optimo: Experimento donde para distintos filtros(mean,sobel,gaussian) se calculan los tiempos de ejecucion para distintos tamaños de imagen y distintos local sizes. Resultados obtenidos estan en EXPERIEMNTOS,RESULTADOS ,gaussian, mean y filtro_sobel
 
-            - Pruebas_kernels_filtros_localvsnot.iypnb: Comparar todos los kernels de filtros imagenes para filtros de distintos tamaños e imagenes 
-               distintas.Resultados obtenidos en EXPERIMENTOS,RESULTADOS,COMPARACION DE KERNELS, FILTRO3X3,FILTRO5X5...
+      - Experimento Memoria Local vs not: Comparar todos los kernels de filtros imagenes para filtros de distintos tamaños e imagenes 
+               distintas para ver cuál es más óptimo
         
-            - experimento_1000veces.ipynb: Experimento ejecutando filtros de imagnes con distintos local sizes pero calculando el promedio de los tiempos. Ejecutar 
-                el kernel 1000 veces y devolver los tiempos medios.Resultados se pueden encontrar en EXPERIMENTOS RESULTADOS 1000veces
+      - Experimento 1000 veces: Experimento ejecutando filtros de imagnes con distintos local sizes pero calculando el promedio de los tiempos. Ejecutar el kernel 1000 veces y devolver los tiempos medios.Resultados se pueden encontrar en EXPERIMENTOS RESULTADOS 1000veces
 
-      - EXPERIMENTOS: Resultados de todos los experimentos anteriores
-      - IMAGENES: Imagenes sobre las que se van a aplicar los filtros
+   - **EXPERIMENTOS:** Resultados de todos los experimentos anteriores
+   - **IMAGENES:** Imagenes sobre las que se van a aplicar los filtros
 
   3. **FUNCION HASH**
      
