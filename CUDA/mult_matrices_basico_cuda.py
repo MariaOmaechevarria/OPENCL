@@ -10,12 +10,12 @@ import pycuda.compiler as SourceModule
 import numpy as np
 
 # Configura las rutas necesarias para Visual Studio y el SDK de Windows
-vs_path = r"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.41.34120\bin\Hostx64\x64"
-sdk_include_path = r"C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\ucrt"
-sdk_lib_path = r"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\ucrt\x64"
+#vs_path = r"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.41.34120\bin\Hostx64\x64"
+#sdk_include_path = r"C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\ucrt"
+#sdk_lib_path = r"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\ucrt\x64"
 
 # Agrega las rutas a la variable PATH
-os.environ["PATH"] += f";{vs_path};{sdk_include_path};{sdk_lib_path}"
+#os.environ["PATH"] += f";{vs_path};{sdk_include_path};{sdk_lib_path}"
 
 # Kernel CUDA para multiplicación de matrices
 MatrixMul_kernel = """
