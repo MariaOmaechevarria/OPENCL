@@ -86,33 +86,32 @@ def obtener_local_size(path,device_type, lista_paths, compute_units: int, proces
 
 
 '''
-EXPERIMENTO 2: Comparar kernels
+EXPERIMENTO 2: Comparar kernels: Compara los kernels de memoria local para determinar cual es el más óptimo. Guarda en la carpeta de resultados
+un gráfico y una tabla.
 '''
 
 def comparacion_kernels(path,device_type,lista_paths):
+    
     # Parámetros de los kernels y funciones
     kernels = [
         kernel.kernel_filter_color,
         kernel.kernel_filter_color_local_ineficiente,
         kernel.kernel_filter_color_local_hebra_maestra,
-        kernel.kernel_filter_color_local_organizado,
-        kernel.kernel_filter_color_local_organizado_junto
+        kernel.kernel_filter_color_local_organizado
     ]
     kernels_names = [
         "kernel_filter_color",
         "kernel_filter_color_local_ineficiente",
         "kernel_filter_color_local_hebra_maestra",
-        "kernel_filter_color_local_organizado",
-        "kernel_filter_color_local_organizado_junto"
+        "kernel_filter_color_local_organizado"
     ]
     funciones = [
         ff.aplicar_filtro_color,
         ff.aplicar_filtro_local,
         ff.aplicar_filtro_local,
-        ff.aplicar_filtro_local,
         ff.aplicar_filtro_local
     ]
-    filtro = f.filtro_mean
+    filtro = [f.filtro_mean,f.filtro_mean,f.filtro_mean,f.filtro_mean]
     local_size = (8,8)  # Cambia esto al tamaño local que desees
 
     # Directorio base para guardar los gráficos
@@ -225,7 +224,7 @@ def filtros_divididos_o_no(path,device_type,image_path):
     #LLAMAR A LA FUNCION 
 
     save_path = os.path.join(path, "OPENCL/FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/COMPARACION_KERNELS/COMPARACION FILTROS/")
-    df_resultados = ex.comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_size, cl.device_type.GPU, filtros1, filtros2,save_path)
+    df_resultados = ex.comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_size, device_type, filtros1, filtros2,save_path)
 
 
 
@@ -287,7 +286,7 @@ def mejor_local_size_1000(path,device_type,lista_paths,compute_units,processing_
     
 
 
-def __init__():
+def main():
     #Ruta del archivo (MODIFICAR SI ES NECESARIO)
     path="C:/Users/Eevee"
 
@@ -327,3 +326,5 @@ def __init__():
     comparacion_kernels(path,device_type,lista_paths)
     filtros_divididos_o_no(path,device_type,image_path)
     mejor_local_size_1000(path,device_type,lista_paths,compute_units,processing_elements)
+
+main()

@@ -464,12 +464,9 @@ def graficar_tiempos_ejecucion_kernels(df,save_path=None):
 
     # Graficar cada kernel
     plt.plot(df.index, df["kernel_filter_color"], marker='o', label='Filtro Color')
-    plt.plot(df.index, df["kernel_filter_color_local"], marker='o', label='Filtro Color Memoria Local Ineficiente')
-    plt.plot(df.index, df["kernel_filter_color_local2"], marker='o', label='Filtro Color Memoria Local Hebra Maestra')
-    plt.plot(df.index, df["kernel_filter_color_local3"], marker='o', label='Filtro Color Memoria Local Organizado')
-    plt.plot(df.index, df["kernel_filter_color_local4"], marker='o', label='Filtro Color Memoria Local Pixels a la vez ')
-    plt.plot(df.index, df["kernel_filter_color_local_rectangular"], marker='o', label='Filtro Color Memoria Local Dividido')
-    plt.plot(df.index, df["kernel_filter_color_rectangular"], marker='o', label='Filtro Color Dividido')
+    plt.plot(df.index, df["kernel_filter_color_local_ineficiente"], marker='o', label='Filtro Color Memoria Local Ineficiente')
+    plt.plot(df.index, df["kernel_filter_color_local_hebra_maestra"], marker='o', label='Filtro Color Memoria Local Hebra Maestra')
+    plt.plot(df.index, df["kernel_filter_color_local_organizado"], marker='o', label='Filtro Color Memoria Local Organizado')
     # Personalizar el gráfico
     plt.title("Tiempos de Ejecución por Kernel")
     plt.xlabel("Nombre de la Imagen")
@@ -486,6 +483,8 @@ def graficar_tiempos_ejecucion_kernels(df,save_path=None):
         plt.show()
 
     plt.close()
+
+    
 
 
 #FUNCION QUE DADA UNA LISTA DE KERNELS,LISTA DE FILTROS Y LISTA DE FUNCIONES ,CALCULA PARA CADA UNO LOS TIEMPOS DE EJECUCION CON UN LCOAL SIZE FIADO
@@ -545,7 +544,7 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
         aplicar_filtro_func = funciones[i]
 
         for j in range(len(filtros1)):
-            if kernel_name == "kernel_filter_color_local3":
+            if kernel_name == "kernel_filter_color_local_organizado":
                 filtro = filtros1[j]
                 try:
                     imagen_resultante, exec_time = aplicar_filtro_func(
@@ -590,7 +589,7 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
     # Crear gráfico de líneas
     plt.figure(figsize=(10, 6))
     for column in df.columns:
-        if column=='kernel_filter_color_local3':
+        if column=='kernel_filter_color_local_organizado':
            label='Kernel Memoria Local'
            
 
