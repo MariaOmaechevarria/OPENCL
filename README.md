@@ -17,7 +17,7 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
    - **ejecutar_cuda_experimentos.ypnb (ARCHIVO A EJECUTAR) :** Ejecuta los dos experimentos anteriores y almacena los resultados en la carpeta de RESULTADOS, 
          subdividida en dos carpetas, una para cada experimento. 
 
-3. FILTROS IMAGENES
+2. **FILTROS IMAGENES:**
 
    Conjunto de archivos con el objetivo de estudiar la aplicación de filtro en OpenCL. Los archivos son los siguientes:
         
@@ -29,16 +29,16 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
         
    - **funciones_experimento_filtros.py:** Funciones para realizar experimentos de aplicación de filtros. Obtienen gráficas y tablas.
    - **ejecutar_experimento_filtros.py( A EJECUTAR):** Archivo donde se ejecutan los 4 experimentos. Son los siguientes:
-   
-      - Experimento filtros divididos vs no: Experimento donde se comparan los tiempos de aplicar filtros de manera normal o de manera 
-                  dividida para filtros cada vez mas grandes. Los resultados obtenidos se almacenan en RESULTADOS ,COMPARACION DE KERNELS , COMPARACION FILTROS
 
-      - Experimento local size optimo: Experimento donde para distintos filtros(mean,sobel,gaussian) se calculan los tiempos de ejecucion para distintos tamaños de imagen y distintos local sizes. Resultados obtenidos estan en EXPERIEMNTOS,RESULTADOS ,gaussian, mean y filtro_sobel
+      - Experimento 1 - Local size optimo: Experimento donde para distintos filtros(mean,sobel,gaussian) se calculan los tiempos de ejecucion para distintos tamaños de imagen y distintos local sizes. Resultados obtenidos estan en EXPERIEMNTOS,RESULTADOS ,gaussian, mean y filtro_sobel
 
-      - Experimento Memoria Local vs not: Comparar todos los kernels de filtros imagenes para filtros de distintos tamaños e imagenes 
+      - Experimento 2-  Memoria Local vs not: Comparar todos los kernels de filtros imagenes para filtros de distintos tamaños e imagenes 
                distintas para ver cuál es más óptimo
+  
+      - Experimento 3- Filtros divididos vs no: Experimento donde se comparan los tiempos de aplicar filtros de manera normal o de manera 
+                  dividida para filtros cada vez mas grandes. Los resultados obtenidos se almacenan en RESULTADOS ,COMPARACION DE KERNELS , COMPARACION FILTROS
         
-      - Experimento 1000 veces: Experimento ejecutando filtros de imagnes con distintos local sizes pero calculando el promedio de los tiempos. Ejecutar el kernel 1000 veces y devolver los tiempos medios.Resultados se pueden encontrar en EXPERIMENTOS RESULTADOS 1000veces
+      - Experimento 4- Prueba 1000 veces: Experimento ejecutando filtros de imagnes con distintos local sizes pero calculando el promedio de los tiempos. Ejecutar el kernel 1000 veces y devolver los tiempos medios.Resultados se pueden encontrar en EXPERIMENTOS RESULTADOS 1000veces
 
    - **EXPERIMENTOS:** Resultados de todos los experimentos anteriores
    - **IMAGENES:** Imagenes sobre las que se van a aplicar los filtros
@@ -55,7 +55,7 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
              1. Para un mismo target, probar distintos lcoal sizes y global sizes. 
              2. Fijado un global size, hacer pruebas con distintas combinaciones de local sizes y de targets
                 
-        -**ejecutar_experimento_mineria.py** Ejecutar experimentos anteriores,resultados guardados en la carpeta RESULTADOS
+       - **ejecutar_experimento_mineria.py** Ejecutar experimentos anteriores,resultados guardados en la carpeta RESULTADOS
 
 4. **MULTIPLICACION DE MATRICES:**
    
