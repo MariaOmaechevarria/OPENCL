@@ -1,5 +1,5 @@
 '''
-MULTIPLICACIÓN DE MATRICES EN OPENCL
+MULTIPLICACIÓN DE MATRICES EN OPENCL: Código en el kernel y host para realizar la multiplicación de matrices en OpenCL
 '''
 
 # Librerias a importar
@@ -10,15 +10,19 @@ import pyopencl as cl
 # Código del kernel para multiplicación de matrices básico
 MatrixMul_kernel = """
 __kernel void MatrixMul_kernel(int dim, __global float* A, __global float* B, __global float* C) {
+    //Obtener fila y columna work del work item
     int fila = get_global_id(0);
     int columna = get_global_id(1);
 
+    //Inicializar variable resultado
     int resultado = 0;
 
+    //Bucle para realizar la multiplicación, recorrer fila y columna
     for (int i = 0; i < dim; i++) {
         resultado += A[fila * dim + i] * B[i * dim + columna];
     }
-
+    
+    //Almacenar resultado en C
     C[fila * dim + columna] = resultado;
 }
 """
@@ -50,7 +54,7 @@ def mult_mat_basica(
         - float: Tiempo de ejecución del kernel en segundos.
         - np.ndarray: Matriz resultante de la multiplicación.
     """
-    # Preparar el kernel y obtener los objetos necesarios
+    # Obtener la  plataforma y el dispositivo
     platform = cl.get_platforms()[0]
     device = platform.get_devices(device_type=device_type)[0]
 
@@ -67,11 +71,10 @@ def mult_mat_basica(
     # Tamaño global
     global_size = (dim, dim)
 
-    # Crear buffers para las matrices
     # Crear matriz C inicializada con ceros
     C = np.zeros((dim, dim), dtype=np.float32)
 
-    # Crear buffers
+    # Crear buffers para las matrices
     bufA = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=A)
     bufB = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=B)
     bufC = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, C.nbytes)
