@@ -1,5 +1,5 @@
 '''
-ARCHIVO CON FUNCIONES PARA COMPARAR OPENCL Y CUDA
+ARCHIVO CON FUNCIONES PARA COMPARAR OPENCL-CUDA Y PARA PROBAR CUDA CON DISTINTOS VALORES
 '''
 
 
@@ -19,7 +19,7 @@ import mult_matrices_basica_opencl as opencl
 
 
 
-# FUNCIONES PARA GUARDAR DATAFRAMES EN EXCEL
+# FUNCION PARA GUARDAR DATAFRAMES EN EXCEL:
 
 def guardar_dataframe_excel(resultados: pd.DataFrame, base_save_dir: str, funcion_nombre: str) -> None:
     """
@@ -51,53 +51,9 @@ def guardar_dataframe_excel(resultados: pd.DataFrame, base_save_dir: str, funcio
 
     print(f"DataFrame guardado en {excel_save_path}")
 
-#Funcion para guardar 2 dataframes en formato excel
-def guardar_dataframes_excel(
-    resultados: pd.DataFrame,
-    best_results_df: pd.DataFrame,
-    base_save_dir: str,
-    funcion_nombre: str
-) -> None:
-    """
-    Guarda dos DataFrames en un archivo Excel con hojas separadas.
-
-    Inputs:
-    - resultados (pd.DataFrame): DataFrame con resultados generales.
-    - best_results_df (pd.DataFrame): DataFrame con los mejores resultados.
-    - base_save_dir (str): Ruta base para guardar el archivo Excel.
-    - funcion_nombre (str): Nombre de la función que genera los resultados.
-
-    Outputs:
-    - None: Guarda los DataFrames en Excel en la ubicación especificada.
-    """
-    # Crear estructura de directorios
-    funcion_dir = os.path.join(base_save_dir, funcion_nombre)
-    os.makedirs(funcion_dir, exist_ok=True)
-    
-    # Ruta completa del archivo Excel
-    excel_save_path = os.path.join(funcion_dir, 'resultados.xlsx')
-    
-    # Guardar en Excel con formato numérico de 6 decimales
-    with pd.ExcelWriter(excel_save_path, engine='xlsxwriter') as writer:
-        resultados.to_excel(writer, sheet_name='Resultados Combinados', index=True)
-        best_results_df.to_excel(writer, sheet_name='Mejores Resultados', index=True)
-
-        workbook = writer.book
-        float_format = workbook.add_format({'num_format': '0.000000'})
-
-        # Formatear hojas
-        worksheet = writer.sheets['Resultados Combinados']
-        for idx, col in enumerate(resultados.columns, start=1):
-            worksheet.set_column(idx, idx, 15, float_format)
-
-        worksheet = writer.sheets['Mejores Resultados']
-        for idx, col in enumerate(best_results_df.columns, start=1):
-            worksheet.set_column(idx, idx, 15, float_format)
-
-    print(f"DataFrames guardados en {excel_save_path}")
 
 
-# FUNCIÓN PARA COMPARAR OPENCL Y CUDA EN MULTIPLICACIÓN DE MATRICES
+# FUNCIONES PARA COMPARAR LA EJECUCIÓN DE  OPENCL Y CUDA EN LA MULTIPLICACIÓN DE MATRICES
 
 def comparar(path: str) -> None:
     """
@@ -125,6 +81,7 @@ def comparar(path: str) -> None:
         A = np.random.random(size=(dim, dim)).astype(np.float32)
         B = np.random.random(size=(dim, dim)).astype(np.float32)
 
+        #Define el número de grupos de trabajo para CUDA
         grid = (dim // 8, dim // 8)
 
         # Medir tiempos de OpenCL y CUDA
@@ -164,7 +121,7 @@ def comparar(path: str) -> None:
     plt.show()
 
 
-# FUNCIÓN PARA APLICAR EXPERIMENTOS EN LOCAL SIZES COMPLETOS
+# FUNCIÓN PARA APLICAR EXPERIMENTOS EN LOCAL SIZES COMPLETOS EN CUDA
 
 def aplicar_kernel_local_sizes_completo() -> pd.DataFrame:
     """
@@ -173,33 +130,44 @@ def aplicar_kernel_local_sizes_completo() -> pd.DataFrame:
     Outputs:
     - pd.DataFrame: Resultados con tiempos de ejecución por configuración de bloque y dimensiones.
     """
+
+    #Distintos tamaños de grupos de trabajo 
     combinaciones_fijas = [(1, 1), (2, 2), (4, 4), (8, 8), (16, 16), (32, 32)]
     combinaciones_128 = [(x, 128 // x) for x in range(1, 129) if 128 % x == 0]
     todas_combinaciones = combinaciones_fijas + combinaciones_128
 
+    #Indice y columnas del dataframe
     index = [f"Block ({block[0]}/{block[1]})" for block in todas_combinaciones]
     columns = [2 ** i for i in range(1, 14)]
 
+    #Dataframe donde se van a almacenar los resultados
     results_df = pd.DataFrame(index=index, columns=columns)
 
+    #Bucle para recorrer las distintas combinaciones
     for block in todas_combinaciones:
+
+        #Tamaño bloques
         block_x, block_y = block
         block_size = block_x * block_y
 
         for dim in columns:
+            #Si el tamaño del bloque es mayor que las propias matrices, resultado NaN
             if block_size > dim * dim:
                 results_df.loc[f"Block ({block_x}/{block_y})", dim] = "NaN"
                 continue
 
+            #Crear matrices aleatorias
             A = np.random.random(size=(dim, dim)).astype(np.float32)
             B = np.random.random(size=(dim, dim)).astype(np.float32)
 
+            #Obetener tamaño del bloque y números de bloques (argumentos de CUDA)
             grid_x = math.ceil(dim / block_x)
             grid_y = math.ceil(dim / block_y)
 
             block_value = (block_x, block_y, 1)
             grid_value = (grid_x, grid_y)
 
+            #REALIZAR LA MULTIPLICACIÓN Y ALMACENAR RESULTADOS
             try:
                 exec_time, _ = cuda.ejecutar_kernel(dim, A, B, block_value, grid_value)
                 results_df.loc[f"Block ({block_x}/{block_y})", dim] = exec_time if exec_time is not None else "NP"
@@ -208,6 +176,11 @@ def aplicar_kernel_local_sizes_completo() -> pd.DataFrame:
 
     return results_df
 
-def experimento_matrices(save_path,funcion_nombre='kernel_cuda'):
+def experimento_matrices(save_path:str,funcion_nombre='kernel_cuda'):
+    '''
+    Aplica la función anterior y almacena los resultados en el dispositivo
+    Input: save_path: directorio de memoria para almacenar el data frame
+    Output: None
+    '''
     results_df=aplicar_kernel_local_sizes_completo()
     guardar_dataframe_excel(results_df,save_path,funcion_nombre)
