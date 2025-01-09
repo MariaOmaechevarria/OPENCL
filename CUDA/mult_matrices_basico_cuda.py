@@ -1,7 +1,6 @@
 '''
-MULTIPLICACIÓN DE MATRICES EN CUDA
+MULTIPLICACIÓN DE MATRICES EN CUDA:Código en el kernel y host para realizar la multiplicación de matrices en CUDA
 '''
-
 
 #Librerias a importar
 import os
@@ -9,25 +8,19 @@ import pycuda.driver as cuda
 import pycuda.compiler as SourceModule
 import numpy as np
 
-# Configura las rutas necesarias para Visual Studio y el SDK de Windows
-#vs_path = r"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.41.34120\bin\Hostx64\x64"
-#sdk_include_path = r"C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\ucrt"
-#sdk_lib_path = r"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\ucrt\x64"
-
-# Agrega las rutas a la variable PATH
-#os.environ["PATH"] += f";{vs_path};{sdk_include_path};{sdk_lib_path}"
-
 # Kernel CUDA para multiplicación de matrices
 MatrixMul_kernel = """
 __global__ void MatrixMul_kernel(int dim, float* A, float* B, float* C) {
+
     // Identificar la fila y columna del elemento de la matriz
     int fila = blockIdx.x * blockDim.x + threadIdx.x;
     int columna = blockIdx.y * blockDim.y + threadIdx.y;
 
+    //Comprobación de estar en los límites de la matriz
     if (fila < dim && columna < dim) {
         float resultado = 0.0f;
 
-        // Calcular el producto de la fila de A y la columna de B
+        //Bucle para realizar la multiplicación, recorre la fila y columna correspondiente
         for (int i = 0; i < dim; i++) {
             resultado += A[fila * dim + i] * B[i * dim + columna];
         }
@@ -38,7 +31,7 @@ __global__ void MatrixMul_kernel(int dim, float* A, float* B, float* C) {
 }
 """
 
-# FUNCIÓN PARA EJECUTAR EL KERNEL Y MEDIR TIEMPO CON CUDA EVENTS
+# FUNCIÓN PARA EJECUTAR EL KERNEL DE MULTIPLICACIÓN DE MATRICES
 def ejecutar_kernel(
     dim: int,
     A: np.ndarray,
@@ -63,8 +56,12 @@ def ejecutar_kernel(
     """
     # Inicializar CUDA
     cuda.init()
-    device = cuda.Device(0)  # Seleccionar el primer dispositivo CUDA disponible
-    context = device.make_context()  # Crear un contexto para gestionar la GPU
+    
+    # Seleccionar el primer dispositivo CUDA disponible
+    device = cuda.Device(0)  
+
+    # Crear un contexto para gestionar la GPU
+    context = device.make_context()  
 
     try:
         # Compilar el kernel CUDA
@@ -99,7 +96,7 @@ def ejecutar_kernel(
         end_event.synchronize()
 
         # Calcular el tiempo de ejecución en milisegundos
-        tiempo_ms = start_event.time_till(end_event)  # Tiempo en ms
+        tiempo_ms = start_event.time_till(end_event) 
 
         # Transferir los datos de la matriz C desde la GPU al host (CPU)
         cuda.memcpy_dtoh(C, C_gpu)
