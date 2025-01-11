@@ -90,7 +90,7 @@ def mult_mat_basica(dim:int,local_size:tuple,device_type,program_text,A,B):
 
 """FUNCION MAIN QUE REALIZA LA MULT DE MATRICES PARA VARIAS DIMENSIONES Y DISTINTOS LOCAL SIZE(Nº WORK ITEMS EN CADA WORK_GROUP)"""
 
-def main():
+if __name__ == "__main__":
 
   device_type=cl.device_type.GPU
 
@@ -121,8 +121,3 @@ def main():
 
   #Guardar los resultados en google collab
   results_df.to_csv('/content/drive/My Drive/Colab Notebooks/TFG_OPENCL/MULTIPLICACION DE MATRICES/Mult_Mat_Basica_GPU.csv',index=True)
-
-  return results_df
-
-
-results_df=main()
