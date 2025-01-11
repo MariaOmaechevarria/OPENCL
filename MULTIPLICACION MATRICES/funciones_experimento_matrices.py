@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 import math
 
 
-# FUNCIÓN QUE DETERMINA EL MEJOR LOCAL SIZE
-
+'''
+FUNCIÓN QUE DETERMINA EL MEJOR LOCAL SIZE
+'''
 def factorizar(n: int) -> list[tuple[int, int]]:
     """
     Encuentra todos los factores de un número entero y devuelve pares de factores.
@@ -32,7 +33,6 @@ def factorizar(n: int) -> list[tuple[int, int]]:
     return factores
 
 #Funcion que determina los local size optimos segun la GPU
-
 def optimal_local_size(
     global_size: tuple[int, int], 
     max_compute_units: int, 
@@ -73,9 +73,56 @@ def optimal_local_size(
     
     return opciones
 
+
 '''
-DETERMINA LOS LOCAL SIZES ÓPTIMOS Y CALCULA LOS TIEMPOS DE EJECUCIÓN
+FUNCIÓN PARA GUARDAR DATA FRAMES EN FORMATO EXCEL
 '''
+
+def guardar_dataframes_excel(resultados: pd.DataFrame, best_results_df: pd.DataFrame, base_save_dir: str, funcion_nombre: str):
+    """
+    Guarda dos DataFrames en un archivo Excel con hojas separadas y formato específico.
+
+    :param resultados: DataFrame con los resultados combinados.
+    :param best_results_df: DataFrame con los mejores resultados.
+    :param base_save_dir: Directorio base para guardar el archivo.
+    :param funcion_nombre: Nombre asociado a la función para organizar los archivos.
+    """
+    # Crear la estructura de directorios si no existe
+    funcion_dir = os.path.join(base_save_dir, funcion_nombre)
+    os.makedirs(funcion_dir, exist_ok=True)
+
+    # Definir la ruta completa del archivo Excel
+    excel_save_path = os.path.join(funcion_dir, 'resultados.xlsx')
+
+    # Usar xlsxwriter como motor para formatear las celdas durante la escritura
+    with pd.ExcelWriter(excel_save_path, engine='xlsxwriter') as writer:
+        # Guardar los DataFrames en hojas separadas
+        resultados.to_excel(writer, sheet_name='Resultados Combinados', index=True)
+        best_results_df.to_excel(writer, sheet_name='Mejores Resultados', index=True)
+
+        # Acceder al workbook y crear un formato para números con 6 decimales
+        workbook = writer.book
+        float_format = workbook.add_format({'num_format': '0.000000'})  # Formato para 6 decimales
+
+        # Formatear 'Resultados Combinados'
+        worksheet = writer.sheets['Resultados Combinados']
+        for idx, col in enumerate(resultados.columns, start=1):  # start=1 para columnas de datos
+            worksheet.set_column(idx, idx, 15, float_format)  # 15 es el ancho de columna
+
+        # Formatear 'Mejores Resultados'
+        worksheet = writer.sheets['Mejores Resultados']
+        for idx, col in enumerate(best_results_df.columns, start=1):
+            worksheet.set_column(idx, idx, 15, float_format)  # 15 es el ancho de columna
+
+    print(f"DataFrames guardados y formateados en Excel en {excel_save_path}")
+
+'''
+EXPERIMENTO: DETERMINAR LOCAL SIZE OPTIMO
+'''
+
+
+#DETERMINA LOS LOCAL SIZES ÓPTIMOS Y CALCULA LOS TIEMPOS DE EJECUCIÓN
+
 def local_sizes_optimos(funcion_aplicar, kernel_code: str, kernel_name: str, device_type: cl.device_type,
                         compute_unit: int, processing_elements: int) -> pd.DataFrame:
     """
@@ -113,9 +160,8 @@ def local_sizes_optimos(funcion_aplicar, kernel_code: str, kernel_name: str, dev
     return results_df
 
 
-'''
-APLICA UN KERNEL PARA DIFERENTES LOCAL SIZES CUADRADOS
-'''
+#APLICA UN KERNEL PARA DIFERENTES LOCAL SIZES CUADRADOS
+
 def aplicar_kernel_local_sizes(kernel_code: str, kernel_name: str, device_type: cl.device_type,
                                funcion_aplicar) -> pd.DataFrame:
     """
@@ -147,9 +193,8 @@ def aplicar_kernel_local_sizes(kernel_code: str, kernel_name: str, device_type: 
     return results_df
 
 
-'''
-GRAFICA LOS TIEMPOS DE EJECUCIÓN DESDE UN DATAFRAME
-'''
+#GRAFICA LOS TIEMPOS DE EJECUCIÓN DESDE UN DATAFRAME
+
 def graficar_tiempos_ejecucion(data: pd.DataFrame, columns_to_plot, rows_to_plot: list[int]=None, save_path: str = None):
     """
     Genera un gráfico de los tiempos de ejecución desde un DataFrame.
@@ -298,6 +343,10 @@ def ejecutar_experimentos(aplicar_funcs: list, kernel_codes: list[str], kernel_n
                              processing_elements, kernel_name, base_save_dir)
 
 
+'''
+EXPERIMENTO:COMPARAR KERNELS
+'''
+
 # FUNCIÓN PARA COMPARAR DIFERENTES KERNELS
 def experimento_kernels(lista_kernels: list[str], lista_nombres_kernels: list[str], lista_funciones: list, 
                         device_type: cl.device_type, local_size: tuple[int, int], 
@@ -391,46 +440,3 @@ def aplicar_kernel_local_fijado(kernel_code: str, kernel_name: str, device_type:
 
 
 
-
-
-'''
-FUNCIÓN UTIL PARA GUARDAR DATA FRAMES
-'''
-
-def guardar_dataframes_excel(resultados: pd.DataFrame, best_results_df: pd.DataFrame, base_save_dir: str, funcion_nombre: str):
-    """
-    Guarda dos DataFrames en un archivo Excel con hojas separadas y formato específico.
-
-    :param resultados: DataFrame con los resultados combinados.
-    :param best_results_df: DataFrame con los mejores resultados.
-    :param base_save_dir: Directorio base para guardar el archivo.
-    :param funcion_nombre: Nombre asociado a la función para organizar los archivos.
-    """
-    # Crear la estructura de directorios si no existe
-    funcion_dir = os.path.join(base_save_dir, funcion_nombre)
-    os.makedirs(funcion_dir, exist_ok=True)
-
-    # Definir la ruta completa del archivo Excel
-    excel_save_path = os.path.join(funcion_dir, 'resultados.xlsx')
-
-    # Usar xlsxwriter como motor para formatear las celdas durante la escritura
-    with pd.ExcelWriter(excel_save_path, engine='xlsxwriter') as writer:
-        # Guardar los DataFrames en hojas separadas
-        resultados.to_excel(writer, sheet_name='Resultados Combinados', index=True)
-        best_results_df.to_excel(writer, sheet_name='Mejores Resultados', index=True)
-
-        # Acceder al workbook y crear un formato para números con 6 decimales
-        workbook = writer.book
-        float_format = workbook.add_format({'num_format': '0.000000'})  # Formato para 6 decimales
-
-        # Formatear 'Resultados Combinados'
-        worksheet = writer.sheets['Resultados Combinados']
-        for idx, col in enumerate(resultados.columns, start=1):  # start=1 para columnas de datos
-            worksheet.set_column(idx, idx, 15, float_format)  # 15 es el ancho de columna
-
-        # Formatear 'Mejores Resultados'
-        worksheet = writer.sheets['Mejores Resultados']
-        for idx, col in enumerate(best_results_df.columns, start=1):
-            worksheet.set_column(idx, idx, 15, float_format)  # 15 es el ancho de columna
-
-    print(f"DataFrames guardados y formateados en Excel en {excel_save_path}")

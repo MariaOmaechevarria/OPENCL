@@ -1,4 +1,7 @@
 
+'''
+ARCHIVO PARA COMPARAR LA EJECUCIÓN EN LAS TRES GPUs utilizadas y en la CPU
+'''
 
 
 #Librerias a importar
