@@ -141,7 +141,6 @@ def array_hex_to_scientific_notation(hex_array: np.ndarray) -> str:
 
 #FUNCION QUE COMPARA DISTINTOS TARGETS EN LA MINERÍA DE UN BLOQUE DEL BLOCKCHAIN CON UN GLOBAL SIZE FIJADO
 
-
 def comparacion_targets(path: str) -> None:
     """
     Compara diferentes objetivos (targets) y mide los tiempos de ejecución.

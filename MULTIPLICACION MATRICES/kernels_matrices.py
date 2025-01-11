@@ -2,8 +2,17 @@
 KERNEL MULTIPLICACIÓN MATRICES
 '''
 
-#KERNEL MULTIPLICACION MATRICES TILES: Realiza la multiplicación por bloques usando la memoria local
+'''
+KERNEL MULTIPLICACION MATRICES TILES: Realiza la multiplicación por bloques usando la memoria local
+Argumentos: N : dimension
+            A,B,C : matrices multiplicación
+            local_A, local_B: Memoria local para almacenar A y B
 
+Funcionamiento: Se divide la matriz en bloques. Cada grupo de trabajo recorre los bloques necesarios para realizar
+la multiplicación. En cada bloque se almacena en la memoria local los valores de A y B necesarios, se realiza
+la multiplicación y se almacenan los resultados.Tras recorrer todos los bloques se obtienen los resultados finales
+
+'''
 MatrixMul_Local_Tiles="""
 __kernel void MatrixMul_Local_Tiles(int N,__global float* A, __global float* B, __global float* C, __local float* local_A, __local float* local_B) {
     // Obtener la información de los índices
@@ -53,46 +62,15 @@ __kernel void MatrixMul_Local_Tiles(int N,__global float* A, __global float* B, 
 """
 
 
-#KERNEL MULTIPLICACION MATRICES MEMORIA LOCAL A : ALMACENA EN LA MEMORIA LOCAL LOS VALORES DE A NECESARISO
-
-MatrixMul_kernel_local_A2="""
-    __kernel void MatrixMul_kernel_local_A2(int dim,__global float *A,__global float *B,__global float *C,__local float *local_A)
-{
- // Obtener la información de los índices
-
- //Indices globales
- int global_id_x = get_global_id(0);
- int global_id_y = get_global_id(1); //(row)
-
- //Indice local size
- int localIdx = get_local_id(0);
-
-// Tamaño grupo trabajo
- int localSizex = get_local_size(0);
- 
- //Inicializar variable resultado
- float result = 0.0f;
-
- //Obtener número de elementos para almacenar
- int numElements = dim/localSizex;
- 
- //Acceder a la memoria global y guardar en la memoria local en lA
- for(int i=0; i<numElements ; i++)
- {
-    local_A[i*localSizex + localIdx] = A[global_id_y*dim + i*localSizex +localIdx];
- }
- //Barrera para sincronizar las hebras
- barrier(CLK_LOCAL_MEM_FENCE);
- 
- //Bucle para realizar la mulriplicación
- for(int i=0;i< dim;++i)
- {
-         result += local_A[i]*B[i*dim + global_id_x];
- }
- //Almacenar resultado
- C[global_id_y*dim + global_id_x] = result;
-}
-"""
+'''
+KERNEL MULTIPLICACION MATRICES MEMORIA LOCAL A : ALMACENA EN LA MEMORIA LOCAL LOS VALORES DE A NECESARISO
+Argumentos:
+   dim : dimension
+   A,B,C : matrices multiplicación
+   local_A: Memoria local para almacenar A 
+Funcionamiento: Cada grupo de trabajo almacena en la memoria local los valores necesarios, luego cada hebra realiza la multiplicación´
+y almacena los resultados en C
+'''
 
 MatrixMul_kernel_local_A="""
     __kernel void MatrixMul_kernel_local_A(int dim,__global float *A,__global float *B,__global float *C,__local float *lA)
@@ -127,9 +105,12 @@ MatrixMul_kernel_local_A="""
 """
 
 
+'''KERNEL MULTIPLICACION MATRICES BASICO
+Argumentos: dim : dimension
+            A,B,C : matrices multiplicación
+Cada work item recorre la fila y columna correspondiente para realizar la multiplicación
 
-#KERNEL MULTIPLICACION MATRICES BASICO
-
+'''
 MatrixMul_kernel="""__kernel void MatrixMul_kernel(int dim, __global int* A, __global int* B, __global int* C) {
     
     //Obtener IDs del work item

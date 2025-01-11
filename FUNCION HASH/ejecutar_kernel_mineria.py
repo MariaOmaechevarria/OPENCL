@@ -8,8 +8,6 @@ import numpy as np
 import hashlib
 
 
-
-
 # Validación del nonce
 def validate_nonce(block: bytearray, nonce: int, target: int) -> tuple[bool, bytes]:
     """
@@ -37,7 +35,7 @@ def validate_nonce(block: bytearray, nonce: int, target: int) -> tuple[bool, byt
     # Verificar si el hash es menor que el objetivo
     return hash_int < target, hash_value
 
-# Minería con OpenCL (múltiples iteraciones del kernel)
+# Minería con OpenCL de un bloque
 def mining_GPU(
     kernel_code: str,
     kernel_name: str,

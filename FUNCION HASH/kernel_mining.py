@@ -147,7 +147,7 @@ __kernel void kernel_mining(
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
     if (*nonce != 0xFFFFFFFF) return;
 
-    //Bariable auxiloar para almacenar el hash
+    //Bariable auxiliar para almacenar el hash
     uint hash[8] = {0};
 
     //Calcular el hash SHA256

@@ -12,7 +12,7 @@ import pyopencl as cl
 FUNCIONES COMUNES PARA MANIPULACIÓN DE MATRICES Y KERNELS EN OPENCL
 '''
 
-def preparacion_kernel(device_type, kernel_code, kernel_name):
+def preparacion_kernel(device_type:str, kernel_code:str, kernel_name:str)->tuple[cl.platform,cl.device,cl.context,cl.command_queue,cl.program,cl.kernel]:
     """
     Configura el entorno OpenCL y compila un kernel.
 
@@ -36,8 +36,7 @@ def preparacion_kernel(device_type, kernel_code, kernel_name):
 
     return platform, device, context, command_queue, program, kernel
 
-
-def establecer_args_kernel(kernel, args):
+def establecer_args_kernel(kernel:str, args:list)->None:
     """
     Configura los argumentos de un kernel.
 
@@ -47,8 +46,7 @@ def establecer_args_kernel(kernel, args):
     for i, arg in enumerate(args):
         kernel.set_arg(i, arg)
 
-
-def ejecutar_kernel(command_queue, kernel_filter, global_size, local_size):
+def ejecutar_kernel(command_queue:cl.command_queue, kernel_filter:cl.kernel, global_size:tuple[int,int], local_size:tuple[int,int])->cl.event:
     """
     Ejecuta un kernel OpenCL y mide su tiempo de ejecución.
 
@@ -62,8 +60,7 @@ def ejecutar_kernel(command_queue, kernel_filter, global_size, local_size):
     event.wait()
     return event
 
-
-def crear_buffers_matrices(A, B, context, dim):
+def crear_buffers_matrices(A:list, B:list, context:cl.context, dim:int)->tuple[cl.buffer,cl.buffer,cl.buffer,list]:
     """
     Crea buffers OpenCL para dos matrices de entrada y una de salida.
 
@@ -81,8 +78,7 @@ def crear_buffers_matrices(A, B, context, dim):
 
     return bufA, bufB, bufC, C
 
-
-def aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, C, bufC):
+def aplicar_kernel(kernel:cl.kernel, args_kernel:list, global_size:tuple[int,int], local_size:tuple[int,int], command_queue:cl.command_queue, C:list, bufC:cl.buffer)->tuple[list,float]:
     """
     Aplica un kernel a los datos y devuelve los resultados.
 
@@ -106,7 +102,7 @@ def aplicar_kernel(kernel, args_kernel, global_size, local_size, command_queue, 
 FUNCIONES ESPECÍFICAS PARA DIFERENTES IMPLEMENTACIONES DE MULTIPLICACIÓN DE MATRICES
 '''
 
-def mult_mat_basica(dim, local_size, device_type, kernel_code, kernel_name, A, B):
+def mult_mat_basica(dim:int, local_size:tuple[int,int], device_type:cl.device_type, kernel_code:str, kernel_name:str, A:list, B:list)->tuple[float,int]:
     """
     Multiplicación básica de matrices utilizando OpenCL.
 
@@ -127,7 +123,7 @@ def mult_mat_basica(dim, local_size, device_type, kernel_code, kernel_name, A, B
     return exec_time, C
 
 
-def mult_mat_local(dim, local_size, device_type, kernel_code, kernel_name, A, B):
+def mult_mat_local(dim:int, local_size:tuple[int,int], device_type:cl.device_type, kernel_code:str, kernel_name:str, A:list, B:list)->tuple[float,int]:
     """
     Multiplicación de matrices utilizando memoria local para A.
 
@@ -151,7 +147,7 @@ def mult_mat_local(dim, local_size, device_type, kernel_code, kernel_name, A, B)
     return exec_time, C
 
 
-def mult_mat_local_tiles(dim, local_size, device_type, kernel_code, kernel_name, A, B):
+def mult_mat_local_tiles(dim:int, local_size:tuple[int,int], device_type:cl.device_type, kernel_code:str, kernel_name:str, A:list, B:list)->tuple[float,int]:
     """
     Multiplicación de matrices utilizando memoria local para A y B con división en tiles.
 
