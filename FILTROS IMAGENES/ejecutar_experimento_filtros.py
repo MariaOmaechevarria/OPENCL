@@ -350,7 +350,7 @@ def mejor_local_size_1000(path:str, device_type:str, lista_paths:list, compute_u
 
 #FUNCIÓN QUE EJECUTA TODOS LOS EXPERIMENTOS ANTERIORES
 
-def ejecutar_experimentos():
+if __name__ == "__main__":
     #Ruta del archivo (MODIFICAR SI ES NECESARIO)
     path="C:/Users/Eevee"
 
@@ -391,4 +391,3 @@ def ejecutar_experimentos():
     filtros_divididos_o_no(path,device_type,image_path)
     mejor_local_size_1000(path,device_type,lista_paths,compute_units,processing_elements)
 
-ejecutar_experimentos()
