@@ -1,10 +1,16 @@
+'''
+FUNCIONES PARA EJECUTAR LOS KERNELS DE APLICACIÓN DE FILTROS A IMÁGENES
+'''
+
+#Librerias a importar
 import numpy as np
 import pyopencl as cl
 from PIL import Image
 import time
 
-# FUNCIONES PARA APLICAR FILTROS
-# COMUNES A TODAS LAS FUNCIONES ESPECÍFICAS POR KERNEL
+'''
+FUNCIONES PARA APLICAR FILTROS COMUNES A TODAS LAS FUNCIONES ESPECÍFICAS POR KERNEL
+'''
 
 def procesar_imagen(image_path: str) -> tuple[int, int, np.ndarray, np.ndarray]:
     """
@@ -19,7 +25,6 @@ def procesar_imagen(image_path: str) -> tuple[int, int, np.ndarray, np.ndarray]:
     imagen_out_np = np.empty_like(imagen_np)
     return tam_x, tam_y, imagen_np, imagen_out_np
 
-
 def pre_compilar_kernel(context: cl.Context, kernel_code: str, kernel_name: str) -> cl.Kernel:
     """
     Compila un kernel OpenCL y lo devuelve.
@@ -32,7 +37,6 @@ def pre_compilar_kernel(context: cl.Context, kernel_code: str, kernel_name: str)
     program = cl.Program(context, kernel_code).build()
     kernel = cl.Kernel(program, kernel_name)
     return kernel
-
 
 def preparacion_kernel(device_type: cl.device_type, kernel_code: str, kernel_name: str) -> tuple:
     """
@@ -51,7 +55,6 @@ def preparacion_kernel(device_type: cl.device_type, kernel_code: str, kernel_nam
     kernel = cl.Kernel(program, kernel_name)
     return platform, device, context, command_queue, program, kernel
 
-
 def establecer_args_kernel(kernel: cl.Kernel, args: list) -> None:
     """
     Establece los argumentos de un kernel.
@@ -61,7 +64,6 @@ def establecer_args_kernel(kernel: cl.Kernel, args: list) -> None:
     """
     for i, arg in enumerate(args):
         kernel.set_arg(i, arg)
-
 
 def ejecutar_kernel(command_queue: cl.CommandQueue, kernel_filter: cl.Kernel, global_size: tuple[int, int], local_size: tuple[int, int]) -> cl.Event:
     """
@@ -76,7 +78,6 @@ def ejecutar_kernel(command_queue: cl.CommandQueue, kernel_filter: cl.Kernel, gl
     event = cl.enqueue_nd_range_kernel(command_queue, kernel_filter, global_size, local_size)
     event.wait()
     return event
-
 
 def pre_filtros(image_path: str, kernel_code: str, kernel_name: str, device_type: cl.device_type, local_size: tuple[int, int]) -> tuple:
     """
@@ -94,7 +95,6 @@ def pre_filtros(image_path: str, kernel_code: str, kernel_name: str, device_type
     buffer_in = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=imagen_np)
     buffer_out = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, imagen_np_out.nbytes)
     return context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue
-
 
 def aplicar_filtro(kernel: cl.Kernel, args_kernel: list, global_size: tuple[int, int], local_size: tuple[int, int],
                    command_queue: cl.CommandQueue, imagen_out_np: np.ndarray, buffer_out: cl.Buffer) -> tuple[Image.Image, float]:
@@ -118,6 +118,10 @@ def aplicar_filtro(kernel: cl.Kernel, args_kernel: list, global_size: tuple[int,
     return imagen_resultante, exec_time
 
 
+'''
+FUNCIÓN PARA APLICAR UN KERNEL BÁSICO A IMAGENES EN COLOR
+'''
+
 def aplicar_filtro_color(image_path: str, filtro: np.ndarray, kernel_code: str, kernel_name: str,
                          device_type: cl.device_type, local_size: tuple[int, int]) -> tuple[Image.Image, float]:
     """
@@ -131,13 +135,20 @@ def aplicar_filtro_color(image_path: str, filtro: np.ndarray, kernel_code: str, 
     :param local_size: Tamaño local del trabajo.
     :return: Imagen resultante y tiempo de ejecución promedio.
     """
+    #Obetener todos los valores previos a ejecutar el kernel
     context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(
         image_path, kernel_code, kernel_name, device_type, local_size)
-
+    
+    #Global size
     global_size = (tam_x, tam_y)
-    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtro)
-    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtro.shape[0]), np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0])]
 
+    #Crear el buffer del filtro
+    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtro)
+
+    #Argumentos del kernel
+    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtro.shape[0]), np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0])]
+    
+    #Aplicar el kernel del filtro color
     imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
     return imagen_resultante, exec_time
 
@@ -146,8 +157,22 @@ def aplicar_filtro_color(image_path: str, filtro: np.ndarray, kernel_code: str, 
 APLICA FILTRO COLOR EJECUTANDO EL KERNEL 1000 VECES
 '''
 
+def aplicar_filtro_color_100(image_path:str, filtro:list,kernel_code:str,kernel_name:str, device_type:str,local_size:tuple)->tuple[Image.Image, float]:
+    """
+    Aplica un filtro a una imagen utilizando OpenCL, ejecutando el kernel 1000 veces para medir el tiempo promedio de ejecución.
 
-def aplicar_filtro_color_100(image_path, filtro,kernel_code,kernel_name, device_type,local_size):
+    Parámetros:
+    - image_path (str): Ruta de la imagen a procesar.
+    - filtro (ndarray): Filtro que se aplicará a la imagen.
+    - kernel_code (str): Código del kernel OpenCL.
+    - kernel_name (str): Nombre del kernel OpenCL.
+    - device_type (str): Tipo de dispositivo en el que se ejecuta el kernel (CPU o GPU).
+    - local_size (int): Tamaño del workgroup en el que se ejecutará el kernel.
+
+    Retorna:
+    - imagen_resultante (Image): Imagen resultante después de aplicar el filtro.
+    - avg_time (float): Tiempo promedio de ejecución por iteración después de ejecutar el kernel 1000 veces.
+    """
     # Cargar la imagen y convertirla en un array
     imagen = Image.open(image_path)
     imagen_np = np.array(imagen).astype(np.uint8)
@@ -157,7 +182,7 @@ def aplicar_filtro_color_100(image_path, filtro,kernel_code,kernel_name, device_
     
     # Preparación del contexto y del kernel
     platform = cl.get_platforms()[0]
-    device = platform.get_devices()[0]
+    device = platform.get_devices(device_type=device_type)[0]
     context = cl.Context([device])
     command_queue = cl.CommandQueue(context)
     filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtro)
@@ -209,7 +234,23 @@ def aplicar_filtro_color_100(image_path, filtro,kernel_code,kernel_name, device_
 APLICA FILTRO COLOR DE CUALQUIER TAMAÑO EL FILTRO, NO NECESARIAMENTE CUADRADO
 '''
 
-def aplicar_filtro_color_cualquiera(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
+def aplicar_filtro_color_cualquiera(image_path:str, filtro:np.ndarray, kernel_code:str, kernel_name:str, device_type:str, local_size:tuple)->tuple[Image.Image, float]:
+
+    """
+    Aplica un filtro a la imagen especificada usando OpenCL.
+
+    Parámetros:
+    image_path (str): Ruta de la imagen a procesar.
+    filtro (numpy.ndarray): El filtro a aplicar, debe ser un array 2D.
+    kernel_code (str): Código fuente del kernel OpenCL.
+    kernel_name (str): Nombre del kernel en el código fuente.
+    device_type (str): Tipo de dispositivo OpenCL (ej. 'GPU' o 'CPU').
+    local_size (tuple): Tamaño del workgroup para la ejecución del kernel.
+
+    Retorna:
+    imagen_resultante (numpy.ndarray): Imagen filtrada.
+    exec_time (float): Tiempo de ejecución del kernel.
+    """
     # Obtener las estructuras necesarias para ejecutar el kernel de filtros
     context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
 
@@ -230,7 +271,33 @@ def aplicar_filtro_color_cualquiera(image_path, filtro, kernel_code, kernel_name
 APLICA EL FILTRO DIVIDIO, PRIMERO HORIZONTAL LUEGO VERTICAL
 '''
 
-def aplicar_filtro_color_dividido(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
+def aplicar_filtro_color_dividido(image_path:str, filtro:tuple, kernel_code:str, kernel_name:str, device_type:str, local_size:tuple[int,int])->tuple[Image.Image, float]:
+     
+    """
+    Aplica un filtro dividido (horizontal seguido de vertical) a una imagen utilizando OpenCL.
+
+    Esta función aplica primero un filtro horizontal a la imagen y luego aplica un filtro vertical
+    sobre la imagen resultante del filtro horizontal. Los dos filtros se ejecutan utilizando OpenCL,
+    y los tiempos de ejecución de ambos filtros se suman para obtener el tiempo total.
+
+    Parámetros:
+    image_path (str): Ruta de la imagen a la que se le aplicarán los filtros.
+    filtro (tuple): Un par de matrices de filtro (filtroX, filtroY), donde filtroX es el filtro horizontal 
+                    y filtroY es el filtro vertical.
+    kernel_code (str): Código fuente del kernel OpenCL que implementa el filtro.
+    kernel_name (str): Nombre del kernel OpenCL que se ejecutará.
+    device_type (str): Tipo de dispositivo OpenCL a utilizar (por ejemplo, "CPU" o "GPU").
+    local_size (tuple): Tamaño del workgroup para ejecutar el kernel.
+
+    Retorna:
+    tuple: Una tupla que contiene:
+        - imagen_resultante (numpy.ndarray): Imagen resultante después de aplicar ambos filtros (horizontal y vertical).
+        - exec_time_total (float): El tiempo total de ejecución en segundos (suma de los tiempos de ejecución de ambos filtros).
+    """
+
+
+
+
     filtroX, filtroY = filtro
 
     # Aplicar filtro horizontal
@@ -290,7 +357,33 @@ def aplicar_filtro_color_dividido(image_path, filtro, kernel_code, kernel_name, 
 APLICA FILTRO MEDIAN: NO NECESITA FILTRO, SE HACE LA MEDIANA DE LOS VALROES
 '''
 
-def aplicar_filtro_median(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
+def aplicar_filtro_median(image_path:str, filtro, kernel_code:str, kernel_names:str, device_type:str, local_size:tuple[int,int])->tuple[Image.Image, float]:
+
+    """
+    Aplica un filtro de mediana a una imagen utilizando OpenCL.
+
+    Esta función utiliza un kernel OpenCL para aplicar un filtro de mediana sobre la imagen especificada. 
+    El filtro se aplica utilizando una implementación basada en OpenCL, donde la imagen es procesada en bloques 
+    y el valor de cada píxel es reemplazado por el valor mediano de sus vecinos en un vecindario definido 
+    por el filtro.
+
+    Parámetros:
+    image_path (str): Ruta de la imagen a la que se le aplicará el filtro de mediana.
+    filtro (object): El filtro que se aplicará, generalmente de tipo matriz. Este parámetro no se utiliza directamente
+                     en esta versión de la función, pero es parte de la firma de la función.
+    kernel_code (str): Código fuente del kernel OpenCL que implementa el filtro de mediana.
+    kernel_name (str): Nombre del kernel en el código fuente OpenCL que se ejecutará.
+    device_type (str): Tipo de dispositivo OpenCL a utilizar (por ejemplo, "CPU" o "GPU").
+    local_size (tuple): Tamaño del workgroup para la ejecución del kernel.
+
+    Retorna:
+    tuple: Una tupla que contiene:
+        - imagen_resultante (numpy.ndarray): Imagen resultante después de aplicar el filtro de mediana.
+        - exec_time (float): El tiempo de ejecución en segundos del filtro de mediana.
+    """
+
+
+
     # Obtener las estructuras necesarias para ejecutar el kernel de filtros
     context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
 
@@ -303,172 +396,6 @@ def aplicar_filtro_median(image_path, filtro, kernel_code, kernel_name, device_t
     imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
 
     return imagen_resultante, exec_time
-
-'''
-APLICA EL FILTRO SOBEL, NECESITA DOS FILTROS
-'''
-
-def aplicar_filtro_sobel(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
-    # Obtener las estructuras necesarias para ejecutar el kernel de filtros
-    context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
-
-    # Establecer global_size
-    global_size = (tam_x, tam_y)
-
-    #Establecer filtro
-    filtroX,filtroY=filtro
-
-    # Crear buffers para los filtros X y Y
-    filtro_bufX = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtroX)
-    filtro_bufY = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtroY)
-
-    # Argumentos del kernel
-    args_kernel = [buffer_in, buffer_out, filtro_bufX, filtro_bufY, np.int32(filtroX.shape[0]), np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0])]
-
-    imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
-
-    return imagen_resultante, exec_time
-
-'''
-FUNCIONES QUE APLICAN DISTINTOS FILTROS COLOR USANDO MEMORIA LOCAL
-'''
-
-
-#Aplica filtro usando la memoria local
-
-def aplicar_filtro_local(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
-    # Procesar la imagen inicial y la final
-    tam_x, tam_y, imagen_np, imagen_np_out = procesar_imagen(image_path)
-
-    # Establecer global_size
-    global_size = (tam_x, tam_y)
-
-    # Preparación del kernel
-    context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
-
-    # Crear buffer para el filtro
-    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtro)
-
-    #Crear memoria local
-    dim=filtro.shape[0]
-    centro = (dim - 1) // 2
-    local_size_x, local_size_y = local_size
-    local_mem_size = (local_size_x + 2 * centro) * (local_size_y + 2 * centro) * 3  # 3 es por los canales R, G, B
-
-    # Define la memoria local
-    local_mem = cl.LocalMemory(local_mem_size)
-
-    # Argumentos del kernel (sin inicializar local_mem aquí)
-    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtro.shape[0]), np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0]), local_mem]
-
-    imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
-
-    return imagen_resultante, exec_time
-
-
-#Aplica filtro usando la memoria local para filtro de cualquier tamaño, no necesariamente cuadrado
-
-def aplicar_filtro_local_cualquiera(image_path, filtro, kernel_code, kernel_name, device_type, local_size):
-    # Procesar la imagen inicial y la final
-    tam_x, tam_y, imagen_np, imagen_np_out = procesar_imagen(image_path)
-
-    # Establecer global_size
-    global_size = (tam_x, tam_y)
-
-    # Preparación del kernel
-    context, kernel, buffer_in, buffer_out, tam_x, tam_y, imagen_np, imagen_np_out, command_queue = pre_filtros(image_path, kernel_code, kernel_name, device_type, local_size)
-
-    # Crear buffer para el filtro
-    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtro)
-
-    #Crear memoria local
-    dimY=filtro.shape[0]
-    dimX=filtro.shape[1]
-    centroX = (dimX - 1) // 2
-    centroY = (dimY - 1) // 2
-    local_size_x, local_size_y = local_size
-    local_mem_size = (local_size_x + 2 * centroY) * (local_size_y + 2 * centroX) * 3  # 3 es por los canales R, G, B
-
-    # Define la memoria local
-    local_mem = cl.LocalMemory(local_mem_size)
-
-    # Argumentos del kernel (sin inicializar local_mem aquí)
-    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtro.shape[1]), np.int32(filtro.shape[0]),np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0]), local_mem]
-
-    imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
-
-    return imagen_resultante, exec_time
-
-
-
-
-
-#APLICA FILTRO MEMORIA LOCAL DIVIDIDO, PRIMERO FILTRO HORIZONTAL LUEGO VERTICAL
-
-def aplicar_filtro_local_dividido(image_path,filtro,kernel_code, kernel_name, device_type, local_size):
-    filtroX,filtroY=filtro
-    
-    #Aplicar filtro horizontal
-    imagen_in,exec_timeX=aplicar_filtro_local_cualquiera(image_path, filtroX, kernel_code, kernel_name, device_type, local_size)
-
-    #Aplicar Filtro Vertical
-
-        # Convertirla a un array de tres canales
-    imagen_np = np.array(imagen_in).astype(np.uint8)
-
-        # Dimensiones de la imagen
-    tam_x, tam_y, _ = imagen_np.shape
-
-        # Crear array para la imagen final
-    imagen_np_out = np.empty_like(imagen_np)
-
-    # Plataforma y dispositivo
-    platform = cl.get_platforms()[0]
-    device = platform.get_devices(device_type=device_type)[0]
-
-    # Crear contexto y cola de comandos
-    context = cl.Context([device])
-    command_queue = cl.CommandQueue(context, device=device, properties=cl.command_queue_properties.PROFILING_ENABLE)
-
-    # Crear el programa y compilarlo
-    program = cl.Program(context, kernel_code).build()
-
-    # Crear el kernel
-    kernel = cl.Kernel(program, kernel_name)
-    
-    #Crear memoria local
-    dimY=filtroY.shape[0]
-    dimX=filtroY.shape[1]
-    centroX = (dimX - 1) // 2
-    centroY = (dimY - 1) // 2
-    local_size_x, local_size_y = local_size
-    local_mem_size = (local_size_x + 2 * centroY) * (local_size_y + 2 * centroX) * 3  # 3 es por los canales R, G, B
-
-    # Define la memoria local
-    local_mem = cl.LocalMemory(local_mem_size)
-
-
-    # Crear buffers
-    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtroY)
-    buffer_in = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=imagen_np)
-    buffer_out = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, imagen_np.nbytes)
-
-    # Establecer global_size
-    global_size = (tam_x, tam_y)
-
-    # Argumentos del kernel
-
-     # Argumentos del kernel (sin inicializar local_mem aquí)
-    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtroY.shape[1]), np.int32(filtroY.shape[0]),np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0]), local_mem]
-
-    imagen_resultante, exec_timeY = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
-    
-
-
-    return imagen_resultante,(exec_timeX+exec_timeY)
-
-
-
 
 '''
 APLICA EL FILTRO SOBEL, NECESITA DOS FILTROS
@@ -499,6 +426,11 @@ def aplicar_filtro_sobel(image_path: str, filtro: tuple[np.ndarray, np.ndarray],
 
     imagen_resultante, exec_time = aplicar_filtro(kernel, args_kernel, global_size, local_size, command_queue, imagen_np_out, buffer_out)
     return imagen_resultante, exec_time
+
+
+'''
+FUNCIONES QUE APLICAN DISTINTOS FILTROS COLOR USANDO MEMORIA LOCAL
+'''
 
 
 '''
