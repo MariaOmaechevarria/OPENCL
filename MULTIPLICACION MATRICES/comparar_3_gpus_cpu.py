@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def cargar_datos_cpu_gpu(cpu_path, gpu_paths):
+def cargar_datos_cpu_gpu(cpu_path:str, gpu_paths:str)->pd.DataFrame:
     """
     Carga los datos de CPU y GPU desde archivos CSV o Excel.
 
@@ -27,7 +27,7 @@ def cargar_datos_cpu_gpu(cpu_path, gpu_paths):
             data[gpu_name] = pd.read_excel(path)
     return data
 
-def filtrar_por_local_size(df, local_size, dim_0, dim_f):
+def filtrar_por_local_size(df:pd.DataFrame, local_size:str, dim_0:int, dim_f:int)->tuple[pd.DtaFrame,pd.DataFrame]:
     """
     Filtra los datos por el tamaño local y rango de dimensiones.
 
@@ -47,7 +47,7 @@ def filtrar_por_local_size(df, local_size, dim_0, dim_f):
     valid_indices = (df_dims >= dim_0) & (df_dims <= dim_f)
     return df_dims[valid_indices], df_times[valid_indices]
 
-def crear_tabla_comparativa(dimensions, tiempos_dict):
+def crear_tabla_comparativa(dimensions:list[int], tiempos_dict:dict)->pd.DataFrame:
     """
     Crea un DataFrame comparativo con los tiempos de ejecución.
 
@@ -63,7 +63,7 @@ def crear_tabla_comparativa(dimensions, tiempos_dict):
         data[dispositivo] = tiempos
     return pd.DataFrame(data)
 
-def graficar_comparacion(dimensions, tiempos_dict, title, save_path=None):
+def graficar_comparacion(dimensions:list[int], tiempos_dict:dict, title:str, save_path=None)->None:
     """
     Grafica los tiempos de ejecución para comparación.
 
@@ -98,7 +98,7 @@ def graficar_comparacion(dimensions, tiempos_dict, title, save_path=None):
         plt.show()
     plt.close()
 
-def guardar_excel(dataframe, save_path, filename):
+def guardar_excel(dataframe:pd.DataFrame, save_path:str, filename:str):
     """
     Guarda un DataFrame como archivo Excel.
 
@@ -121,7 +121,8 @@ if __name__ == "__main__":
         'NVIDIA GeForce RTX 3090': "C:/Users/Eevee/OPENCL/MULTIPLICACION MATRICES/RESULTADOS/MatrixMul_kernel/resultados.xlsx"
     }
     save_path = 'C:/Users/Eevee/OPENCL/MULTIPLICACION MATRICES/RESULTADOS'
-
+    
+    #Comparar las 3 GPUS y CPU
     data = cargar_datos_cpu_gpu(cpu_path, gpu_paths)
     local_size = "(4/4)"
     dim_0, dim_f = 4, 2048
@@ -137,7 +138,7 @@ if __name__ == "__main__":
     graficar_comparacion(dimensions, tiempos, 'Tiempos de Ejecución para Local Size (4/4)',
                          os.path.join(save_path, 'grafico_comparacion_gpus.png'))
     
-
+    #Comparar las tres GPUS
 
     data2 = cargar_datos_cpu_gpu(None, gpu_paths)
     local_size = "(4/4)"
