@@ -18,7 +18,8 @@ def cargar_datos_cpu_gpu(cpu_path, gpu_paths):
         dict: Diccionario con DataFrames para CPU y GPUs.
     """
     data = {}
-    data['CPU'] = pd.read_csv(cpu_path)
+    if cpu_path is not None:
+       data['CPU'] = pd.read_csv(cpu_path)
     for gpu_name, path in gpu_paths.items():
         if path.endswith('.csv'):
             data[gpu_name] = pd.read_csv(path)
@@ -138,7 +139,7 @@ if __name__ == "__main__":
     
 
 
-    data2 = cargar_datos_cpu_gpu(df.empty(), gpu_paths)
+    data2 = cargar_datos_cpu_gpu(None, gpu_paths)
     local_size = "(4/4)"
     dim_0, dim_f = 4, 2048
 
