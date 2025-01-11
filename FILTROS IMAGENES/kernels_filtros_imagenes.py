@@ -1,34 +1,57 @@
-#KERNELS FILTROS IMAGENES
+'''KERNELS FILTROS IMAGENES'''
 
-#FILTRO BLANCO Y NEGRO
+
+#KERNELS FILTROS IMAGENES BÁSICOS
+
+
+'''
+FILTRO BLANCO Y NEGRO : Kernel que aplica un filtro a una imagen en blanco y negro.
+Argumentos: imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+Función: Cada work item aplica el filtro a un pixel que ele corresponde, primero comprueba que el pixel no se encuentre en
+el borde, luego recorre los elementos en la ventana correspondiente y realiza la convolución.
+Por último almacena el resultado en la imagen final
+'''
 kernel_filter_black_white="""
 __kernel void kernel_filter_black_white(__global uchar* imagen_in,__global uchar* imagen_out,__constant float* filtro,int dim,int ancho,int alto){
-
+  // Índices del work item
   int fila = get_global_id(0);
   int columna = get_global_id(1);
-
+  
+  //Valor central del filtro
   int centro=(dim-1)/2;
+
+  //Inicializar valor de suma
   float suma=0.0f;
+
+  //Declarar i,j
   int i,j;
 
   //Asegurarse de que el píxel esté dentro de los límites
 
    if (centro <= fila && fila < (alto - centro) && centro <= columna && columna < (ancho - centro)) {
 
+       //Recorrer los valores de los pixels en la ventana
        for(i=-centro;i<=centro;i++){
 
             for(j=-centro;j<=centro;j++){
 
+               //Obtener el valor del pixel
                float pixel_value = imagen_in[(fila+i) * ancho + (columna+j)];
 
+                //Realizar la convolución
                 suma += pixel_value * filtro[(i + centro) * dim + (j + centro)];
                 }
                 }
-
+                //Almacenar resultado en la imagen
                 imagen_out[fila * ancho + columna]=(uchar)suma;
     }
 
   else{
+    //Si el pixel esta en el borde dejarlo igual
     imagen_out[fila * ancho + columna]=imagen_in[fila * ancho + columna];
   }
 
@@ -37,27 +60,40 @@ __kernel void kernel_filter_black_white(__global uchar* imagen_in,__global uchar
 """
 
 
-
-#KERNEL A COLOR:
+'''
+FILTRO A COLOR : Kernel que aplica un filtro a una imagen en color.
+Argumentos: imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+Función: Cada work item aplica el filtro a un pixel( RGB) que ele corresponde, primero comprueba que el pixel no se encuentre en
+el borde, luego recorre los elementos en la ventana correspondiente y realiza tres convoluciones.
+Por último almacena el resultado en la imagen final. 
+'''
 
 kernel_filter_color="""
 __kernel void kernel_filter_color(__global uchar* imagen_in,__global uchar* imagen_out,__constant float* filtro,int dim,int ancho,int alto){
-
+  
+  //Obtener indices work item
   int fila = get_global_id(0);
   int columna = get_global_id(1);
-
+  
+  //Obtener centro del pixel
   int centro=(dim-1)/2;
-
+  
+  //Inicializar valores de la suma
   float suma_rojo=0.0f;
   float suma_verde=0.0f;
   float suma_azul=0.0f;
-
+  
+  //Inicializar variables aux
   int i,j;
 
   //Asegurarse de que el píxel esté dentro de los límites
 
    if (centro <= fila && fila < (alto - centro) && centro <= columna && columna < (ancho - centro)) {
-
+       //Recorrer los pixels de la ventana
        for(i=-centro;i<=centro;i++){
 
             for(j=-centro;j<=centro;j++){
@@ -69,9 +105,10 @@ __kernel void kernel_filter_color(__global uchar* imagen_in,__global uchar* imag
                 float pixel_rojo = imagen_in[idx];
                 float pixel_verde = imagen_in[idx + 1];
                 float pixel_azul = imagen_in[idx + 2];
-
+         
                 float valor_filtro = filtro[(i + centro) * dim + (j + centro)];
 
+                // Realizar las convoluciones
                 suma_rojo += pixel_rojo * valor_filtro;
                 suma_verde += pixel_verde * valor_filtro;
                 suma_azul += pixel_azul * valor_filtro;
@@ -79,6 +116,7 @@ __kernel void kernel_filter_color(__global uchar* imagen_in,__global uchar* imag
 
                 }
         }
+        //Almacenar resultados en C
         int idx_out = (fila * ancho + columna) * 3;
         imagen_out[idx_out] = (uchar)suma_rojo;
         imagen_out[idx_out + 1] = (uchar)suma_verde;
@@ -87,6 +125,7 @@ __kernel void kernel_filter_color(__global uchar* imagen_in,__global uchar* imag
     }
 
     else {
+        //Si el pixel está en los bordes permanece igual
         int idx_out = (fila * ancho + columna) * 3;
         imagen_out[idx_out] = imagen_in[idx_out];
         imagen_out[idx_out + 1] = imagen_in[idx_out + 1];
@@ -95,7 +134,17 @@ __kernel void kernel_filter_color(__global uchar* imagen_in,__global uchar* imag
 }
 """
 
-#KERNEL A COLOR PARA FILTROS RECTANGULARES
+'''
+FILTRO A COLOR RECTANGULAR : Kernel que aplica un filtro a una imagen en color.
+Argumentos: imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim_x, dim_y: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+Función: Cada work item aplica el filtro a un pixel( RGB) que ele corresponde, primero comprueba que el pixel no se encuentre en
+el borde, luego recorre los elementos en la ventana correspondiente y realiza tres convoluciones.
+Por último almacena el resultado en la imagen final. 
+'''
 
 kernel_filter_color_rectangular="""
 __kernel void kernel_filter_color_rectangular(__global uchar* imagen_in,
@@ -162,16 +211,28 @@ __kernel void kernel_filter_color_rectangular(__global uchar* imagen_in,
 
 """
 
-#KERNEL FILTRO SOBEL
+'''
+FILTRO A COLOR SOBEL: Kernel que aplica el filtro sobel a una imagen en color.
+Argumentos: imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro_X,filtro_Y: Filtros a aplicar
+            dim: Tamaño de los filtros
+            ancho,alto: tamaño de la imagen
+Función: Cada work item aplica los dos filtros sobel a un pixel( RGB) que le corresponde, primero comprueba que el pixel no se encuentre en
+el borde, luego recorre los elementos en la ventana correspondiente y realiza las convoluciones. Luego realiza la raiz
+cuadrada de los resultados al cuadrado y ya por último almacena el resultado en la imagen final. 
+'''
 
 kernel_filter_color_sobel="""
 __kernel void kernel_filter_color_sobel(__global uchar* imagen_in,__global uchar* imagen_out,__constant float* filtro_X,__constant float* filtro_Y,int dim,int ancho,int alto){
-
+  //Obtener ids work item
   int fila = get_global_id(0);
   int columna = get_global_id(1);
-
+  
+  //Obtener el centro del pixel
   int centro=(dim-1)/2;
-
+  
+  //Inicializar las variables resultados
   float suma_rojo_X=0.0f;
   float suma_verde_X=0.0f;
   float suma_azul_X=0.0f;
@@ -183,6 +244,7 @@ __kernel void kernel_filter_color_sobel(__global uchar* imagen_in,__global uchar
   float T_green=0.0f;
   float T_blue=0.0f;
 
+  //Inicializar las variables auxiliares i,j
   int i,j;
 
   //Asegurarse de que el píxel esté dentro de los límites
@@ -203,24 +265,24 @@ __kernel void kernel_filter_color_sobel(__global uchar* imagen_in,__global uchar
 
                 float valor_filtro_X = filtro_X[(i + centro) * dim + (j + centro)];
                 float valor_filtro_Y = filtro_Y[(i + centro) * dim + (j + centro)];
-
+                //Convolución filtro X
                 suma_rojo_X += pixel_rojo * valor_filtro_X;
                 suma_verde_X += pixel_verde * valor_filtro_X;
                 suma_azul_X += pixel_azul * valor_filtro_X;
-
+                //Convolución filtro Y
                 suma_rojo_Y += pixel_rojo * valor_filtro_Y;
                 suma_verde_Y += pixel_verde * valor_filtro_Y;
                 suma_azul_Y += pixel_azul * valor_filtro_Y;
 
                 }
         }
-
+        //Obtener valor final
         T_red = sqrt(suma_rojo_X * suma_rojo_X + suma_rojo_Y * suma_rojo_Y);
         T_green = sqrt(suma_verde_X * suma_verde_X + suma_verde_Y * suma_verde_Y);
         T_blue = sqrt(suma_azul_X * suma_azul_X + suma_azul_Y * suma_azul_Y);
 
 
-
+        //Almacenar resultado
 
         int idx_out = (fila * ancho + columna) * 3;
         imagen_out[idx_out] = (uchar)T_red;
@@ -238,15 +300,26 @@ __kernel void kernel_filter_color_sobel(__global uchar* imagen_in,__global uchar
 }
 """
 
-#KERNEL FILTRO MEDIAN:
+'''
+FILTRO A COLOR MEDIAN: Kernel que aplica el filtro sobel a una imagen en color.
+Argumentos: imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            ancho,alto: tamaño de la imagen
+Función: Cada work item aplica el filtro median a un pixel( RGB) que le corresponde, primero comprueba que el pixel no se encuentre en
+el borde, luego recorre los elementos en la ventana correspondiente y calcula la mediana de esos valores
+. Por último almacena el resultado en la imagen final. za la ra
+'''
 
 kernel_filter_median="""
 __kernel void kernel_filter_median(__global uchar* imagen_in, __global uchar* imagen_out, int dim, int ancho, int alto) {
-
+    //Obtener índice del work item
     int fila = get_global_id(0);
     int columna = get_global_id(1);
-
+    
+    //Obtener el centro del pixel
     int centro = (dim - 1) / 2;
+
+    //Inicializar variables auxiliares
     int i, j;
 
     // Asegurarse de que el píxel esté dentro de los límites
@@ -319,7 +392,21 @@ __kernel void kernel_filter_median(__global uchar* imagen_in, __global uchar* im
 
 """
 
-#KERNEL MEMORIA LOCAL INEFICIENTE
+
+#KERNELS QUE UTILIZAN MEMORIA LOCAL
+
+
+'''KERNEL MEMORIA LOCAL INEFICIENTE: Aplica un filtro a una imagen utilizando la memoria local
+Argumentos : imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+            local_imagen: Espacio en la memoria local para almacenar resultados
+Funcionamineto: Cada work item aplica un filtro a un pixel. Recorre los pixels necesarios, los almacena en la memoria local
+y luego realiza la convolución. (INEFICIENTE)
+
+'''
 
 kernel_filter_color_local_ineficiente="""
 __kernel void kernel_filter_color_local_ineficiente(
@@ -331,9 +418,11 @@ __kernel void kernel_filter_color_local_ineficiente(
     int alto, 
     __local uchar* local_imagen) 
 {
+    // Obtener índices de work item
     int fila = get_global_id(0);
     int columna = get_global_id(1);
     
+    //Centro del pixel
     int centro = (dim - 1) / 2;
 
     // IDs locales
@@ -380,6 +469,8 @@ __kernel void kernel_filter_color_local_ineficiente(
             }
         }
     }
+    
+    //Barrera para sincornizar los work items
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -392,13 +483,13 @@ __kernel void kernel_filter_color_local_ineficiente(
         for (int i = -centro; i <= centro; i++) {
             for (int j = -centro; j <= centro; j++) {
                 int local_idx = ((local_fila + i + centro) * (local_size_x + 2 * centro) + (local_columna + j + centro)) * 3;
-
+                //Realziar la convolución
                 suma_rojo += local_imagen[local_idx] * filtro[(i + centro) * dim + (j + centro)];
                 suma_verde += local_imagen[local_idx + 1] * filtro[(i + centro) * dim + (j + centro)];
                 suma_azul += local_imagen[local_idx + 2] * filtro[(i + centro) * dim + (j + centro)];
             }
         }
-
+        //ALmacenar los resultados
         int idx_out = (fila * ancho + columna) * 3;
         imagen_out[idx_out] = (uchar)clamp(suma_rojo, 0.0f, 255.0f);
         imagen_out[idx_out + 1] = (uchar)clamp(suma_verde, 0.0f, 255.0f);
@@ -414,9 +505,18 @@ __kernel void kernel_filter_color_local_ineficiente(
 
 """
 
+'''KERNEL MEMORIA LOCAL HEBRA MAESTRA: Aplica un filtro a una imagen utilizando la memoria local
+Argumentos : imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+            local_imagen: Espacio en la memoria local para almacenar resultados
+Funcionamineto: Cada work item aplica un filtro a un pixel. Una hebra en cada grupo almacena en la memoria local
+todos los elementos necesarios para el grupo . Luego una vez las hebras esten sincornizadas, cada work item 
+ recorre los pixels necesarios y luego realiza la convolución. (INEFICIENTE)
 
-
-# KERNEL MEMORIA LOCAL HEBRA MAESTRA
+'''
 
 kernel_filter_color_local_hebra_maestra = """
 __kernel void kernel_filter_color_local_hebra_maestra(
@@ -450,7 +550,7 @@ __kernel void kernel_filter_color_local_hebra_maestra(
 
     // Acceder a la memoria local solo la hebra 0
     if(local_fila == 0 && local_columna == 0) {
-        // Quiero guardar una matriz de tamaño (local_size_x + 2) * (local_size_y + 2) * 3
+        // Almaceno una matriz de tamaño (local_size_x + 2) * (local_size_y + 2) * 3
 
         for(i = -centro; i < centro+local_size_x; i++) {
             for(j = -centro; j < centro+local_size_y; j++) {
@@ -474,7 +574,7 @@ __kernel void kernel_filter_color_local_hebra_maestra(
                 }
             }
         }
-        // Cargar bordes
+        
    
     }
 
@@ -489,13 +589,13 @@ __kernel void kernel_filter_color_local_hebra_maestra(
         for (int i = -centro; i <= centro; i++) {
             for (int j = -centro; j <= centro; j++) {
                 int local_idx = ((local_fila + i + centro) * (local_size_y + 2) + (local_columna + j + centro)) * 3;
-
+                //Realziar la convolución
                 suma_rojo += local_imagen[local_idx] * filtro[(i + centro) * dim + (j + centro)];
                 suma_verde += local_imagen[local_idx + 1] * filtro[(i + centro) * dim + (j + centro)];
                 suma_azul += local_imagen[local_idx + 2] * filtro[(i + centro) * dim + (j + centro)];
             }
         }
-
+        //ALmacenar los resultados finales
         int idx_out = (fila * ancho + columna) * 3;
         imagen_out[idx_out] = (uchar)clamp(suma_rojo, 0.0f, 255.0f);
         imagen_out[idx_out + 1] = (uchar)clamp(suma_verde, 0.0f, 255.0f);
@@ -510,9 +610,18 @@ __kernel void kernel_filter_color_local_hebra_maestra(
 }
 """
 
+'''KERNEL MEMORIA LOCAL ORGANIZADO: Aplica un filtro a una imagen utilizando la memoria local
+Argumentos : imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+            local_imagen: Espacio en la memoria local para almacenar resultados
+Funcionamineto: Cada work item aplica un filtro a un pixel. Cada hebra en cada grupo almacena en la memoria local
+un número de elementos necesarios para el grupo, de forma que se almacenen todos . Luego una vez las hebras esten
+ sincronizadas, cada work item recorre los pixels necesarios y luego realiza la convolución. 
 
-
-#KERNEL FILTER MEMORIA LOCAL TRABAJO DIVIDIDO ENTRE HEBRAS
+'''
 
 kernel_filter_color_local_organizado = """__kernel void kernel_filter_color_local_organizado(
     __global uchar* imagen_in, 
@@ -577,14 +686,14 @@ kernel_filter_color_local_organizado = """__kernel void kernel_filter_color_loca
         float suma_verde = 0.0f;
         float suma_azul = 0.0f;
 
-        // Aplicar el filtro convolucional
+        // Aplicar el filtro 
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
                 int local_i = local_fila + i;
                 int local_j = local_columna + j;
                 
                 int local_idx = (local_i * local_dim_y + local_j) * 3;
-                
+                //Realizar la convolución
                 suma_rojo += (float)local_imagen[local_idx] * filtro[i * dim + j];
                 suma_verde += (float)local_imagen[local_idx + 1] * filtro[i * dim + j];
                 suma_azul += (float)local_imagen[local_idx + 2] * filtro[i * dim + j];
@@ -605,7 +714,16 @@ kernel_filter_color_local_organizado = """__kernel void kernel_filter_color_loca
     }
 }
 """
-#KERNEL FILTER MEMORIA LOCAL TRABAJO DIVIDIDO ENTRE HEBRAS DONDE SE GUARADN RGB A LA VEZ
+
+'''KERNEL MEMORIA LOCAL ORGANIZADO JUNTO: Aplica un filtro a una imagen utilizando la memoria local
+Argumentos : imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+            local_imagen: Espacio en la memoria local para almacenar resultados
+Funcionamineto: Exactamente igual que el anterior, pero en vez de coger los tres pixels(RGB) de uno en uno, los coge a la vez
+'''
 
 kernel_filter_color_local_organizado_junto = """__kernel void kernel_filter_color_local_organizado_junto(
     __global uchar* imagen_in, 
@@ -707,7 +825,19 @@ kernel_filter_color_local_organizado_junto = """__kernel void kernel_filter_colo
 }
 """
 
-#KERNEL FILTRO MEMORIA LOCAL PARA FILTROS RECTANGULARES (IGUAL QUE KERNEL LOCAL3)
+'''KERNEL MEMORIA LOCAL RECTANGULAR: Aplica un filtro de cualquier tamaño a una imagen utilizando la memoria local
+Argumentos : imagen_in : Imagen inicial en blanco y negro
+            imagen_out: Imagen Final en blanco y negro
+            filtro: Filtro a aplicar
+            dim_x,dim_y: Tamaño del filtro
+            ancho,alto: tamaño de la imagen
+            local_imagen: Espacio en la memoria local para almacenar resultados
+            
+Funcionamineto: Cada work item aplica un filtro a un pixel. Cada hebra en cada grupo almacena en la memoria local
+un número de elementos necesarios para el grupo, de forma que se almacenen todos . Luego una vez las hebras esten
+ sincronizadas, cada work item recorre los pixels necesarios y luego realiza la convolución. 
+
+'''
 kernel_filter_color_local_rectangular="""
 __kernel void kernel_filter_color_local_rectangular(
     __global uchar* imagen_in, 
