@@ -202,7 +202,7 @@ def extraer_dimensiones(nombre_archivo:str):
 # UNA CIERTA FUNCION.
 #DEVUELVE UN DATA FRAME CON LOS VALORES CORRESPONDIENTES
 
-def filtros_local_size_fijado(lista_paths:list, filtro:list, aplicar_filtro_func:function, kernel_code:str, kernel_name:str, device_type:str, local_size:tuple)-> pd.DataFrame:
+def filtros_local_size_fijado(lista_paths:list, filtro:list, aplicar_filtro_func, kernel_code:str, kernel_name:str, device_type:str, local_size:tuple)-> pd.DataFrame:
     """
     Aplica un filtro en imágenes utilizando un kernel de OpenCL, con un tamaño de grupo de trabajo (`local_size`) especificado,
     y registra los tiempos de ejecución.
@@ -266,7 +266,7 @@ def filtros_local_size_fijado(lista_paths:list, filtro:list, aplicar_filtro_func
 
 
 #DADO UN DATA FRAME DETERMINA LOS MEJORES LOCAL SIZES PARA CADA IMAGEN.
-def mejores_valores(results_combined:pd.Dataframe)-> pd.Dataframe:
+def mejores_valores(results_combined:pd.DataFrame)-> pd.DataFrame:
     """
     Encuentra los mejores valores (mínimos) en cada fila de un DataFrame y los tamaños locales asociados.
 
@@ -310,7 +310,7 @@ DETERMINAR LOS MEJORES. SE HACE PARA NUMEROSOS FILTROS Y KERNELS
 
 #FUNCION PARA APLICAR A UNA LISTA DE IMAGENES UN FILTRO DADO CON LA FUNCION CORRESPONDIENTE SEGÚN EL KERNEL .
 
-def filtros_generales(lista_paths:list, filtro:list, aplicar_filtro_func:function, kernel_code:str, kernel_name:str, device_type:str)->pd.DataFrame:
+def filtros_generales(lista_paths:list, filtro:list, aplicar_filtro_func, kernel_code:str, kernel_name:str, device_type:str)->pd.DataFrame:
     """
     Aplica un filtro a una lista de imágenes para múltiples configuraciones de tamaño local.
 
@@ -476,7 +476,7 @@ def graficar_tiempos_ejecucion(data:pd.DataFrame, columns_to_plot=None, save_pat
 #Realiza un experimento de filtros en un conjunto de imágenes, aplicando filtros con diferentes tamaños de trabajo (local sizes).
 # Genera gráficos con los resultados y devuelve los mejores resultados.
 
-def experimento_filtros(lista_paths:list[str], filtro:list[float], aplicar_filtro_func:function, kernel_code:str, kernel_names:str, device_type:str, compute_units:int, processing_elements:int, filtro_nombre:str, funcion_nombre:str, base_save_dir='graficos'):
+def experimento_filtros(lista_paths:list[str], filtro:list[float], aplicar_filtro_func, kernel_code:str, kernel_name:str, device_type:str, compute_units:int, processing_elements:int, filtro_nombre:str, funcion_nombre:str, base_save_dir='graficos'):
     """
     Realiza un experimento de filtros en un conjunto de imágenes, aplicando filtros con diferentes tamaños de trabajo (local sizes).
     Genera gráficos con los resultados y devuelve los mejores resultados.
@@ -542,7 +542,7 @@ def experimento_filtros(lista_paths:list[str], filtro:list[float], aplicar_filtr
 
 #Ejecuta una serie de experimentos aplicando diferentes filtros a un conjunto de imágenes.
 
-def ejecutar_experimentos(lista_paths:list[str], filtros:list[list],filtros_nombres:list[str] ,aplicar_filtro_funcs:list[function], kernel_codes:list[str], kernel_names:list[str], device_type:str, compute_units:int, processing_elements:int, base_save_dir='graficos'):
+def ejecutar_experimentos(lista_paths:list[str], filtros:list[list],filtros_nombres:list[str] ,aplicar_filtro_funcs:list, kernel_codes:list[str], kernel_names:list[str], device_type:str, compute_units:int, processing_elements:int, base_save_dir='graficos'):
     """
     Ejecuta una serie de experimentos aplicando diferentes filtros a un conjunto de imágenes.
     Los resultados son guardados en gráficos y archivos Excel.
@@ -638,7 +638,7 @@ def graficar_tiempos_ejecucion_kernels(df,save_path=None):
     
 #Función para ejecutar un experimento de diferentes kernels, aplicando un filtro específico a cada imagen y guardando los resultados.
 
-def experimento_kernels(lista_paths:list[str], lista_filtro:list[list], lista_kernels:list[str], lista_nombres_kernels:list[str], lista_funciones:list[function], device_type:str, local_size:tuple, base_save_dir:str)->pd.DataFrame:
+def experimento_kernels(lista_paths:list[str], lista_filtro:list[list], lista_kernels:list[str], lista_nombres_kernels:list[str], lista_funciones:list, device_type:str, local_size:tuple, base_save_dir:str)->pd.DataFrame:
     """
     Función para ejecutar un experimento de diferentes kernels, aplicando un filtro específico a cada imagen y guardando los resultados.
 
