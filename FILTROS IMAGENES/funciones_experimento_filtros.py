@@ -1,4 +1,8 @@
+'''
+FUNCIONES PARA REALIZAR EXPERIMENTOS CON LOS FILTROS DE IMÁGENES EN LA GPU
+'''
 
+#Librerias a importar
 import numpy as np
 import pandas as pd
 import os
@@ -8,7 +12,9 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import math
 
-# FUNCIÓN QUE DETERMINA EL MEJOR LOCAL SIZE
+'''
+FUNCIONES PARA DETERMINA EL POSIBLE MEJOR LOCAL SIZE
+'''
 
 def factorizar(n: int) -> list[tuple[int, int]]:
     """
@@ -76,6 +82,16 @@ FUNCIONES PARA GUARDAR DATA FRAMES EN FORMATO EXCEL
 # GUARDA DOS DATA FRAMES EN UN ARCHIVO
 
 def guardar_dataframes_excel(resultados, best_results_df, base_save_dir, filtro_nombre, funcion_nombre):
+    """
+    Guarda dos DataFrames en un archivo Excel con hojas separadas, formateando celdas numéricas y creando directorios si no existen.
+    
+    Parámetros:
+        - resultados: DataFrame con los resultados combinados.
+        - best_results_df: DataFrame con los mejores resultados.
+        - base_save_dir: Ruta base donde se guardará el archivo Excel.
+        - filtro_nombre: Nombre del filtro para definir subcarpeta dentro de base_save_dir.
+        - funcion_nombre: Nombre de la función (opcional para estructuras adicionales de directorios).
+    """
 
     # Crear la estructura de directorios si no existe
     funcion_dir = os.path.join(base_save_dir, filtro_nombre)
@@ -112,6 +128,13 @@ def guardar_dataframes_excel(resultados, best_results_df, base_save_dir, filtro_
 #GUARDA UN DATA FRAME EN FORMATO EXCEL
     
 def guardar_dataframe_excel(resultados,base_save_dir):
+    """
+    Guarda un DataFrame en un archivo Excel con formato numérico en celdas y crea directorios si no existen.
+    
+    Parámetros:
+        - resultados: DataFrame con los datos a guardar.
+        - base_save_dir: Ruta base donde se guardará el archivo Excel.
+    """
  
     # Crear la estructura de directorios si no existe
     funcion_dir = os.path.join(base_save_dir)
@@ -143,14 +166,29 @@ FUNCIONES COMUNES A LOS EXPERIMENTOS
 '''
 
 #FUNCION PARA OBTENER EL TAMAÑO DE UNA IMAGEN
+def obtener_tamano_imagen(path:str)-> int:
+    '''
+     Calcula el tamaño total en píxeles de una imagen dada su ruta.
+     Parametros:
+        path : ruta de la imagen
+    Output:
+        numero pixesl:int
 
-def obtener_tamano_imagen(path):
-    from PIL import Image
+    '''
     with Image.open(path) as img:
-        return img.size[0] * img.size[1]  # Ancho * Alto
+        return img.size[0] * img.size[1]  
 
 # Función para extraer las dimensiones de las imágenes
-def extraer_dimensiones(nombre_archivo):
+def extraer_dimensiones(nombre_archivo:str):
+    """
+    Extrae las dimensiones de un archivo a partir de su nombre utilizando un patrón como '128x128' o '640x480'.
+    Args:
+        nombre_archivo (str): El nombre del archivo que contiene las dimensiones en formato 'AnchoxAlto', 
+                              por ejemplo, 'imagen_128x128.jpg'.
+    Returns:
+        tuple: Una tupla con las dimensiones extraídas en formato (ancho, alto). 
+               Si no se encuentran las dimensiones, devuelve (0, 0).
+    """
     # Buscar un patrón como '128x128', '640x480', etc.
     dimensiones = re.findall(r'(\d+)x(\d+)', nombre_archivo)
     if dimensiones:
@@ -160,13 +198,33 @@ def extraer_dimensiones(nombre_archivo):
         # Si no se encuentran dimensiones, devolver un valor que permita ordenar correctamente
         return (0, 0)
     
-#FUNCION QUE PARA UN DADO LOCAL SIZE CALCULA LOS TIEMPOS DE EJECUCION AL APLICAR UN FILTRO DADO PARA UN CIERTO KERNEL Y UNA CIERTA FUNCION.
+#FUNCION QUE PARA UN LOCAL SIZE CALCULA LOS TIEMPOS DE EJECUCION AL APLICAR UN FILTRO  PARA UN CIERTO KERNEL Y 
+# UNA CIERTA FUNCION.
 #DEVUELVE UN DATA FRAME CON LOS VALORES CORRESPONDIENTES
 
-def filtros_local_size_fijado(lista_paths, filtro, aplicar_filtro_func, kernel_code, kernel_name, device_type, local_size):
+def filtros_local_size_fijado(lista_paths:list, filtro:list, aplicar_filtro_func:function, kernel_code:str, kernel_name:str, device_type:str, local_size:tuple)-> pd.DataFrame:
+    """
+    Aplica un filtro en imágenes utilizando un kernel de OpenCL, con un tamaño de grupo de trabajo (`local_size`) especificado,
+    y registra los tiempos de ejecución.
+
+    Args:
+        lista_paths (list): Lista de rutas a las imágenes que serán procesadas.
+        filtro (tuple or list): Parámetros del filtro. Puede ser un único valor o un par de valores (filtroX, filtroY).
+        aplicar_filtro_func (function): Función que aplica el filtro en una imagen y devuelve la imagen resultante y el tiempo de ejecución.
+        kernel_code (str): Código fuente del kernel de OpenCL.
+        kernel_name (str): Nombre del kernel dentro del código fuente.
+        device_type (str): Tipo de dispositivo (CPU, GPU, etc.) en el que se ejecutará el kernel.
+        local_size (tuple): Tamaño del grupo de trabajo para la ejecución del kernel.
+
+    Returns:
+        pandas.DataFrame: Un DataFrame con los tiempos de ejecución para cada imagen procesada.
+                          Las filas corresponden a los nombres de las imágenes y las columnas a los tiempos de ejecución.
+    """
+    
     # Crear un diccionario para almacenar los tiempos de ejecución
     results = {os.path.basename(path): [] for path in lista_paths}
-
+    
+    #Si se trata de un filtro doble , como el caso sobel
     if len(filtro) == 2:
         filtroX, filtroY = filtro[0], filtro[1]
 
@@ -184,7 +242,7 @@ def filtros_local_size_fijado(lista_paths, filtro, aplicar_filtro_func, kernel_c
             except Exception as e:
                 print(f"Error al procesar {os.path.basename(path)}: {e}")
                 results[os.path.basename(path)].append(None)  # Manejo de error
-
+    #Filtro normal
     else:
         for path in lista_paths:
             try:
@@ -207,8 +265,21 @@ def filtros_local_size_fijado(lista_paths, filtro, aplicar_filtro_func, kernel_c
     return results_general
 
 
-#DADO UN DATA FRAME DETERMINA LOS MEJORES LOCAL SIZES PARA CADA IMAGEN. DEVUELVE UN DATA FRAME
-def mejores_valores(results_combined):
+#DADO UN DATA FRAME DETERMINA LOS MEJORES LOCAL SIZES PARA CADA IMAGEN.
+def mejores_valores(results_combined:pd.Dataframe)-> pd.Dataframe:
+    """
+    Encuentra los mejores valores (mínimos) en cada fila de un DataFrame y los tamaños locales asociados.
+
+    Args:
+        results_combined (pandas.DataFrame): DataFrame donde las filas representan imágenes y las columnas
+                                             representan tiempos de ejecución para diferentes tamaños locales.
+
+    Returns:
+        pandas.DataFrame: Un DataFrame con los mejores valores por imagen, incluyendo:
+                          - Nombre de la imagen.
+                          - El valor mínimo.
+                          - Los tamaños locales asociados con el valor mínimo.
+    """
     best_results = []
 
     # Iterar sobre las filas del DataFrame
@@ -232,16 +303,28 @@ def mejores_valores(results_combined):
     
 
 '''
-FUNCIONES PARA REALIZAR EL EXPERIMENTO_MEJOR_LOCAL_SIZE Y EXPERIMENTO_1000VECES : PARA DISTINTOS LOCAL SIZES OBETENER LSO TIEMPOS DE EJECUCION Y 
+FUNCIONES PARA REALIZAR EL EXPERIMENTO_MEJOR_LOCAL_SIZE Y EXPERIMENTO_1000VECES : PARA DISTINTOS LOCAL SIZES OBTENER LOS TIEMPOS DE EJECUCION Y 
 DETERMINAR LOS MEJORES. SE HACE PARA NUMEROSOS FILTROS Y KERNELS
 '''
 
 
+#FUNCION PARA APLICAR A UNA LISTA DE IMAGENES UN FILTRO DADO CON LA FUNCION CORRESPONDIENTE SEGÚN EL KERNEL .
 
-#FUNCION PARA APLICAR A UNA LISTA DE IMAGENES UN FILTRO DADO CON LA FUNCION DADA PARA EL KERNEL DADO.
-#DEVUELVE UN DATA FRAME CON LOS CAL SIZES ,LAS IMAGENES Y LOS TIEMPOS DE EJECUCION
+def filtros_generales(lista_paths:list, filtro:list, aplicar_filtro_func:function, kernel_code:str, kernel_name:str, device_type:str)->pd.DataFrame:
+    """
+    Aplica un filtro a una lista de imágenes para múltiples configuraciones de tamaño local.
 
-def filtros_generales(lista_paths, filtro, aplicar_filtro_func, kernel_code, kernel_name, device_type):
+    Args:
+        lista_paths (list[str]): Lista de rutas de las imágenes.
+        filtro: Parámetros del filtro a aplicar.
+        aplicar_filtro_func (function): Función que aplica el filtro y devuelve la imagen resultante y el tiempo de ejecución.
+        kernel_code (str): Código del kernel OpenCL.
+        kernel_name (str): Nombre del kernel.
+        device_type (str): Tipo de dispositivo (e.g., 'CPU', 'GPU').
+    
+    Returns:
+        pandas.DataFrame: DataFrame con los tiempos de ejecución para cada imagen y tamaño local.
+    """
     local_sizes = [(1, 1), (2, 2), (4, 4), (8, 8), (16, 16)]
     results = {size: [] for size in local_sizes}
 
@@ -270,10 +353,27 @@ def filtros_generales(lista_paths, filtro, aplicar_filtro_func, kernel_code, ker
 
     return results_general
 
-#DETERMINA LOS MEJORES LOCAL SIZES Y CALCULA PARA ESOS LOS TIEMPOS DE EJCUCION AL APLICAR EL FILTRO Y KERNEL DADO PARA LA LISTA DE IMAGENES
-#DEVUELVE UN DATA FRAME CON LOS VALORES
-#
+#Aplica un filtro a una lista de imágenes utilizando tamaños locales óptimos.
+
 def filtros_optimos(lista_paths, filtro, aplicar_filtro_func, kernel_code, kernel_name, device_type, compute_unit, processing_elements):
+    """
+    Aplica un filtro a una lista de imágenes utilizando tamaños locales óptimos.
+
+    Args:
+        lista_paths (list[str]): Lista de rutas de las imágenes.
+        filtro: Parámetros del filtro a aplicar.
+        aplicar_filtro_func (function): Función que aplica el filtro y devuelve la imagen resultante y el tiempo de ejecución.
+        kernel_code (str): Código del kernel OpenCL.
+        kernel_name (str): Nombre del kernel.
+        device_type (str): Tipo de dispositivo (e.g., 'CPU', 'GPU').
+        compute_unit (int): Número de unidades de cómputo del dispositivo.
+        processing_elements (int): Número de elementos de procesamiento por unidad de cómputo.
+
+    Returns:
+        pandas.DataFrame: DataFrame con los tiempos de ejecución para cada imagen y tamaño local óptimo.
+    """
+    
+
     # Inicializar el diccionario para almacenar los resultados
     results = defaultdict(lambda: defaultdict(list))  # Almacena resultados para cada tamaño local
 
@@ -320,9 +420,26 @@ def filtros_optimos(lista_paths, filtro, aplicar_filtro_func, kernel_code, kerne
     return results_optimal
 
 #FUNCION QUE GRAFICA UN DATA FRAME DONDE EL EJE X SON LAS IAMGENES, EL EJE Y LOS TIEMPOS DE EJECUCION Y CADA LOCAL SIZE ES UNA LINEA DEL GRAFICO
-def graficar_tiempos_ejecucion(data, columns_to_plot=None, save_path=None):
-    plt.figure(figsize=(12, 8))
+def graficar_tiempos_ejecucion(data:pd.DataFrame, columns_to_plot=None, save_path=None):
+    """
+    Genera un gráfico de tiempos de ejecución por tamaño de trabajo (local size).
 
+    Args:
+        data (pandas.DataFrame): DataFrame con tiempos de ejecución. 
+                                 Las columnas representan los tamaños locales.
+                                 Las filas representan imágenes.
+        columns_to_plot (list[str], optional): Lista de columnas específicas (tamaños locales) a graficar.
+                                               Si es None, se grafican todas.
+        save_path (str, optional): Ruta donde se guardará el gráfico.
+                                   Si es None, se muestra el gráfico en pantalla.
+
+    Returns:
+        None
+    """
+    #Crear figura
+    plt.figure(figsize=(12, 8))
+    
+     # Filtrar columnas si se especificaron
     if columns_to_plot:
         data = data[columns_to_plot]
 
@@ -356,12 +473,31 @@ def graficar_tiempos_ejecucion(data, columns_to_plot=None, save_path=None):
     plt.close()
 
 
-#FUNCION QUE REALIZA EL EXPERIMENTO PARA UN FILTRO DADO,UN KERNEL Y UNA FUNCION. PARA NUMEROSOS LOCAL SIZES CALCULA LOS TIEMPOS DE EJECUCION PARA
-# UNA LISTA DE IMAGENES.
-#  DEVUELVE DOS DATA FRAMES Y TRES GRAFICOS
+#Realiza un experimento de filtros en un conjunto de imágenes, aplicando filtros con diferentes tamaños de trabajo (local sizes).
+# Genera gráficos con los resultados y devuelve los mejores resultados.
 
-def experimento_filtros(lista_paths, filtro, aplicar_filtro_func, kernel_code, kernel_name, device_type, compute_units, processing_elements, filtro_nombre, funcion_nombre, base_save_dir='graficos'):
+def experimento_filtros(lista_paths:list[str], filtro:list[float], aplicar_filtro_func:function, kernel_code:str, kernel_names:str, device_type:str, compute_units:int, processing_elements:int, filtro_nombre:str, funcion_nombre:str, base_save_dir='graficos'):
+    """
+    Realiza un experimento de filtros en un conjunto de imágenes, aplicando filtros con diferentes tamaños de trabajo (local sizes).
+    Genera gráficos con los resultados y devuelve los mejores resultados.
 
+    Args:
+        lista_paths (list[str]): Lista de rutas a las imágenes a procesar.
+        filtro (any): El filtro que se aplicará a las imágenes.
+        aplicar_filtro_func (function): Función que aplica el filtro y devuelve la imagen procesada y el tiempo de ejecución.
+        kernel_code (str): Código del kernel OpenCL que se utilizará.
+        kernel_name (str): Nombre del kernel.
+        device_type (str): Tipo de dispositivo (CPU o GPU).
+        compute_units (int): Número de unidades de cómputo.
+        processing_elements (int): Número de elementos de procesamiento.
+        filtro_nombre (str): Nombre del filtro que se usará para los gráficos y directorios.
+        funcion_nombre (str): Nombre de la función para el análisis y gráficos.
+        base_save_dir (str, optional): Directorio base donde se guardarán los gráficos. Por defecto es 'graficos'.
+
+    Returns:
+        tuple: DataFrames con los resultados combinados y los mejores resultados por imagen.
+    """
+    
     # PARTE 1: APLICAR LOCAL SIZES GENERICAS
     results_general = filtros_generales(lista_paths, filtro, aplicar_filtro_func, kernel_code, kernel_name, device_type)
 
@@ -404,10 +540,29 @@ def experimento_filtros(lista_paths, filtro, aplicar_filtro_func, kernel_code, k
     # PARTE 8: Devolver los DataFrames
     return results_combined, best_results_df
 
-#EJECUTA LA FUNCION EXPERIMENTO_FILTROS PARA UNA LISTA DE FILTROS,KERNELS Y FUNCIONES A APLICAR. DEVUELVE PARA CADA KERNEL DOS TABLAS Y TRES GRAFICOS
+#Ejecuta una serie de experimentos aplicando diferentes filtros a un conjunto de imágenes.
 
-def ejecutar_experimentos(lista_paths, filtros,filtros_nombres ,aplicar_filtro_funcs, kernel_codes, kernel_names, device_type, compute_units, processing_elements, base_save_dir='graficos'):
-  
+def ejecutar_experimentos(lista_paths:list[str], filtros:list[list],filtros_nombres:list[str] ,aplicar_filtro_funcs:list[function], kernel_codes:list[str], kernel_names:list[str], device_type:str, compute_units:int, processing_elements:int, base_save_dir='graficos'):
+    """
+    Ejecuta una serie de experimentos aplicando diferentes filtros a un conjunto de imágenes.
+    Los resultados son guardados en gráficos y archivos Excel.
+
+    Args:
+        lista_paths (list[str]): Lista de rutas a las imágenes.
+        filtros (list[any]): Lista de filtros a aplicar.
+        filtros_nombres (list[str]): Lista con los nombres de los filtros.
+        aplicar_filtro_funcs (list[function]): Lista de funciones que aplican los filtros a las imágenes.
+        kernel_codes (list[str]): Lista de códigos de los kernels OpenCL.
+        kernel_names (list[str]): Lista de nombres de los kernels OpenCL.
+        device_type (str): Tipo de dispositivo (CPU o GPU).
+        compute_units (int): Número de unidades de cómputo.
+        processing_elements (int): Número de elementos de procesamiento.
+        base_save_dir (str, optional): Directorio base para guardar los gráficos. Por defecto es 'graficos'.
+
+    Returns:
+        None
+    """
+
     # Verificar que todas las listas tengan la misma longitud
     assert len(filtros) == len(aplicar_filtro_funcs) == len(kernel_codes) == len(kernel_names), "Las listas de filtros, funciones, kernels y nombres deben tener la misma longitud."
 
@@ -443,15 +598,11 @@ def ejecutar_experimentos(lista_paths, filtros,filtros_nombres ,aplicar_filtro_f
 
 
 '''
-FUNCIONES COMPARACION KERNELS USADAS EN Pruebas_kernels_filtros_local_size y en Experimento_distintos_filtros
-DETERMINAR MEJOR KERNEL 
+FUNCIONES PARA COMPARAR KERNELS Y DETERMINAR EL MEJOR
 '''
 
 
-
-# DADO UN DATA FRAME CON DISTINTOS KERNELS REALIZA UN GRAFICO DONDE EL EJE X SON LAS DIMENSIONES DE LAS IMAGENES, EL EJE Y LOS TIEMPOS DE EJECUCION Y CADA
-# LINEA DEL GFRAFICO ES UN KERNEL DISTINTO
-
+# Función para graficar los tiempos de ejecución de diferentes kernels para diferentes imágenes.
 def graficar_tiempos_ejecucion_kernels(df,save_path=None):
     """
     Función para graficar los tiempos de ejecución de diferentes kernels para diferentes imágenes.
@@ -485,22 +636,40 @@ def graficar_tiempos_ejecucion_kernels(df,save_path=None):
     plt.close()
 
     
+#Función para ejecutar un experimento de diferentes kernels, aplicando un filtro específico a cada imagen y guardando los resultados.
 
+def experimento_kernels(lista_paths:list[str], lista_filtro:list[list], lista_kernels:list[str], lista_nombres_kernels:list[str], lista_funciones:list[function], device_type:str, local_size:tuple, base_save_dir:str)->pd.DataFrame:
+    """
+    Función para ejecutar un experimento de diferentes kernels, aplicando un filtro específico a cada imagen y guardando los resultados.
 
-#FUNCION QUE DADA UNA LISTA DE KERNELS,LISTA DE FILTROS Y LISTA DE FUNCIONES ,CALCULA PARA CADA UNO LOS TIEMPOS DE EJECUCION CON UN LCOAL SIZE FIADO
-#DEVUELVE AL FINAL UN DATA FRAME CON LOS VALORES PARA TODOS LOS KERNELS Y UN GRAFICO
+    Parámetros:
+    - lista_paths (list): Rutas de las imágenes a procesar.
+    - lista_filtro (list): Filtros a aplicar a las imágenes.
+    - lista_kernels (list): Códigos de los kernels a ejecutar.
+    - lista_nombres_kernels (list): Nombres de los kernels para etiquetar los resultados.
+    - lista_funciones (list): Funciones para aplicar los filtros a las imágenes.
+    - device_type (str): Tipo de dispositivo (CPU, GPU, etc.).
+    - local_size (int): Tamaño de trabajo local a aplicar en los kernels.
+    - base_save_dir (str): Directorio base para guardar los resultados y gráficos.
 
-def experimento_kernels(lista_paths, lista_filtro, lista_kernels, lista_nombres_kernels, lista_funciones, device_type, local_size, base_save_dir):
+    Retorna:
+    - resultados_finales (DataFrame): DataFrame con los tiempos de ejecución de cada kernel.
+    """
+    
+
     # Inicializar el DataFrame de resultados
     resultados_finales = pd.DataFrame()
+    
+    #Recorrer la lista de kernels
 
     for i in range(len(lista_kernels)):
+        #Obtener los valores
         kernel_code=lista_kernels[i]
         kernel_name=lista_nombres_kernels[i]
         aplicar_filtro_func=lista_funciones[i]
         filtro=lista_filtro[i]
 
-    
+        #Ejecutar el kernel con la funcion que corresponde
         resultados_kernel = filtros_local_size_fijado(
             lista_paths,
             filtro,
@@ -531,10 +700,27 @@ def experimento_kernels(lista_paths, lista_filtro, lista_kernels, lista_nombres_
 
     return resultados_finales
 
-#FUNCION PARA COMPARAR KERNELS , FIJADO UN LOCAL SIZE, CALCULA LOS TIEMPOS DE EJECUCION PARA UNA LISTA DE IMAGENES Y UNA LISTA DE FILTROS
-# DEVUELVE UN DATA FRAME CON LOS VALORES Y UN GRAFICO
+#Función para comparar el rendimiento de diferentes filtros aplicados con distintos kernels.
 
 def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_size, device_type, filtros1, filtros2,save_path):
+    """
+    Función para comparar el rendimiento de diferentes filtros aplicados con distintos kernels.
+
+    Parámetros:
+    - kernels_codes (list): Códigos de los kernels.
+    - kernels_names (list): Nombres de los kernels.
+    - funciones (list): Funciones para aplicar los filtros a las imágenes.
+    - image_path (str): Ruta de la imagen a procesar.
+    - local_size (int): Tamaño de trabajo local (workgroup size) para los kernels.
+    - device_type (str): Tipo de dispositivo (CPU, GPU, etc.).
+    - filtros1 (list): Filtros para el caso de "kernel_filter_color_local_organizado".
+    - filtros2 (list): Pares de filtros (filtroX, filtroY) para otros casos.
+    - save_path (str): Ruta para guardar el gráfico generado y el DataFrame.
+
+    Retorna:
+    - df (DataFrame): DataFrame con los tiempos de ejecución de cada kernel.
+    """
+    
     # Crear un diccionario para almacenar los resultados
     results = {name: [] for name in kernels_names}
 
@@ -582,17 +768,12 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
     # Renombrar el índice
     df.index = [str(i) for i in range(1, 33)]
 
-
-
-
-
     # Crear gráfico de líneas
     plt.figure(figsize=(10, 6))
     for column in df.columns:
         if column=='kernel_filter_color_local_organizado':
            label='Kernel Memoria Local'
            
-
         elif column=="kernel_filter_color_local_rectangular":
            label='Kernel Memoria Local Separado'
 
@@ -623,9 +804,7 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
 FUNCIONES PARA REPETIR LOS MISMOS EXPERIMENTOS---> NO SE USA
 '''
 
-
 #FUNCION PARA REPETIR EL MISMO EXPERIMENTO PARA EL MISMO LOCAL SIZE MUCHAS VECES
-
 def repetir_experimento(local_size, kernel_code, kernel_name, lista_paths, filter, aplicar_filtro_func, device_type):
     valores = []
     
@@ -648,11 +827,7 @@ def repetir_experimento(local_size, kernel_code, kernel_name, lista_paths, filte
 
     return medias
 
-
-
-
 #FUNCION PARA REPETIR EXPERIMENTO PARA UNA LISTA DADA DE LOCAL SIZES. DEVUELVE DOS DATA FRAMES CON LOS VALORES Y VARIOS GRAFICOS.
-
 def repetir_experimento_local_sizes(kernel_code, kernel_name, lista_paths, filter, aplicar_filtro_func, device_type,base_save_dir):
     local_sizes = [(1, 1), (2, 2), (4, 4), (8, 8), (16, 16), (1, 128), (128, 1), (2, 64), (64, 2), 
                    (32, 4), (4, 32), (8, 16), (16, 8)]
