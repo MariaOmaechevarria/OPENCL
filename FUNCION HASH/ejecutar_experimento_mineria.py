@@ -12,7 +12,7 @@ import funciones_experimento_mining as ex
 
 #RUTA PARA GUARDAR ARCHIVOS (MODIFICAR)
 
-path="C:/Users/Eevee"
+path="C:/Users/Eevee/OPENCL"
 
 # TARGET SENCILLO:
 # Este objetivo (target) tiene una dificultad baja, lo que significa que es más probable encontrar un hash válido.
