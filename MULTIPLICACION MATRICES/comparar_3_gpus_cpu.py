@@ -27,7 +27,7 @@ def cargar_datos_cpu_gpu(cpu_path:str, gpu_paths:str)->pd.DataFrame:
             data[gpu_name] = pd.read_excel(path)
     return data
 
-def filtrar_por_local_size(df:pd.DataFrame, local_size:str, dim_0:int, dim_f:int)->tuple[pd.DtaFrame,pd.DataFrame]:
+def filtrar_por_local_size(df:pd.DataFrame, local_size:str, dim_0:int, dim_f:int)->tuple[pd.DataFrame,pd.DataFrame]:
     """
     Filtra los datos por el tamaño local y rango de dimensiones.
 
@@ -133,10 +133,10 @@ if __name__ == "__main__":
         tiempos[dispositivo] = times
 
     comparison_df = crear_tabla_comparativa(dimensions, tiempos)
-    guardar_excel(comparison_df, save_path, 'Comparar_GPUS')
+    guardar_excel(comparison_df, save_path, 'Comparar_GPUS_CPU')
 
     graficar_comparacion(dimensions, tiempos, 'Tiempos de Ejecución para Local Size (4/4)',
-                         os.path.join(save_path, 'grafico_comparacion_gpus.png'))
+                         os.path.join(save_path, 'grafico_comparacion_gpus_cpu.png'))
     
     #Comparar las tres GPUS
 
