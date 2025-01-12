@@ -12,7 +12,7 @@ import pyopencl as cl
 FUNCIONES COMUNES PARA MANIPULACIÓN DE MATRICES Y KERNELS EN OPENCL
 '''
 
-def preparacion_kernel(device_type:str, kernel_code:str, kernel_name:str)->tuple[cl.platform,cl.device,cl.context,cl.command_queue,cl.program,cl.kernel]:
+def preparacion_kernel(device_type:str, kernel_code:str, kernel_name:str):
     """
     Configura el entorno OpenCL y compila un kernel.
 
@@ -46,7 +46,7 @@ def establecer_args_kernel(kernel:str, args:list)->None:
     for i, arg in enumerate(args):
         kernel.set_arg(i, arg)
 
-def ejecutar_kernel(command_queue:cl.command_queue, kernel_filter:cl.kernel, global_size:tuple[int,int], local_size:tuple[int,int])->cl.event:
+def ejecutar_kernel(command_queue:cl.CommandQueue, kernel_filter:cl.Kernel, global_size:tuple[int,int], local_size:tuple[int,int])->cl.Event:
     """
     Ejecuta un kernel OpenCL y mide su tiempo de ejecución.
 
@@ -60,7 +60,7 @@ def ejecutar_kernel(command_queue:cl.command_queue, kernel_filter:cl.kernel, glo
     event.wait()
     return event
 
-def crear_buffers_matrices(A:list, B:list, context:cl.context, dim:int)->tuple[cl.buffer,cl.buffer,cl.buffer,list]:
+def crear_buffers_matrices(A:list, B:list, context:cl.Context, dim:int)->tuple[cl.Buffer,cl.Buffer,cl.Buffer,list]:
     """
     Crea buffers OpenCL para dos matrices de entrada y una de salida.
 
@@ -78,7 +78,7 @@ def crear_buffers_matrices(A:list, B:list, context:cl.context, dim:int)->tuple[c
 
     return bufA, bufB, bufC, C
 
-def aplicar_kernel(kernel:cl.kernel, args_kernel:list, global_size:tuple[int,int], local_size:tuple[int,int], command_queue:cl.command_queue, C:list, bufC:cl.buffer)->tuple[list,float]:
+def aplicar_kernel(kernel:cl.Kernel, args_kernel:list, global_size:tuple[int,int], local_size:tuple[int,int], command_queue:cl.CommandQueue, C:list, bufC:cl.Buffer)->tuple[list,float]:
     """
     Aplica un kernel a los datos y devuelve los resultados.
 
