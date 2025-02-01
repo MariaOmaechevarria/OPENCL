@@ -164,7 +164,7 @@ def comparacion_targets(path: str) -> None:
 
     block = bytearray(80)
     global_size = (2**20,)
-    kernel_name = "kernel_mining2"
+    kernel_name = "kernel_mining"
     device_type = cl.device_type.GPU
     local_sizes = [(1,), (2,), (4,), (8,), (16,), (32,), (64,), (128,)]
 
@@ -173,7 +173,7 @@ def comparacion_targets(path: str) -> None:
 
     for target in targets:
         for local_size in local_sizes:
-            exec_time, result_nonce, hash_value = mining_GPU(kernel.kernel_mining2, kernel_name, block, target, global_size, local_size, device_type)
+            exec_time, result_nonce, hash_value = mining_GPU(kernel.kernel_mining, kernel_name, block, target, global_size, local_size, device_type)
             results_dict[tuple(target)].append(exec_time)
 
     # Convertir el diccionario a DataFrame
