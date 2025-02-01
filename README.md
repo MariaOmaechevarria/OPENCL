@@ -93,5 +93,6 @@ Este repositorio contiene una colección de scripts y notebooks relacionados con
 
 9. **OPECNL_SCRIPTS:** Archivos con codigos en OpenCL(NO PYOPENCL)
     - multiplicacion_mat_opencl.cpp : Archivo de prueba en opencl de multiplicación matrices
+    - incrementarvector.cpp : Archivo de prueba en opencl de incrementar un vector
       
       
