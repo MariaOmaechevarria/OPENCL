@@ -230,6 +230,86 @@ def aplicar_filtro_color_100(image_path:str, filtro:list,kernel_code:str,kernel_
     return imagen_resultante, avg_time
 
 
+def aplicar_filtro_color_local_100(image_path:str, filtro:list,kernel_code:str,kernel_name:str, device_type:str,local_size:tuple)->tuple[Image.Image, float]:
+    """
+    Aplica un filtro a una imagen utilizando OpenCL, ejecutando el kernel 1000 veces para medir el tiempo promedio de ejecución.
+
+    Parámetros:
+    - image_path (str): Ruta de la imagen a procesar.
+    - filtro (ndarray): Filtro que se aplicará a la imagen.
+    - kernel_code (str): Código del kernel OpenCL.
+    - kernel_name (str): Nombre del kernel OpenCL.
+    - device_type (str): Tipo de dispositivo en el que se ejecuta el kernel (CPU o GPU).
+    - local_size (int): Tamaño del workgroup en el que se ejecutará el kernel.
+
+    Retorna:
+    - imagen_resultante (Image): Imagen resultante después de aplicar el filtro.
+    - avg_time (float): Tiempo promedio de ejecución por iteración después de ejecutar el kernel 1000 veces.
+    """
+    # Cargar la imagen y convertirla en un array
+    imagen = Image.open(image_path)
+    imagen_np = np.array(imagen).astype(np.uint8)
+
+    # Dimensiones de la imagen
+    tam_x, tam_y, _ = imagen_np.shape
+    
+    # Preparación del contexto y del kernel
+    platform = cl.get_platforms()[0]
+    device = platform.get_devices(device_type=device_type)[0]
+    context = cl.Context([device])
+    command_queue = cl.CommandQueue(context)
+    filtro_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=filtro)
+
+    # Compilación del kernel
+    program = cl.Program(context, kernel_code).build()
+    kernel = cl.Kernel(program, kernel_name)
+
+    # Crear buffers
+    buffer_in = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=imagen_np)
+    buffer_out = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, imagen_np.nbytes)
+
+    # Establecer global_size
+    global_size = (tam_x, tam_y)
+
+    dim = filtro.shape[0]
+    centro = (dim - 1) // 2
+    local_size_x, local_size_y = local_size
+    local_mem_size = (local_size_x + 2 * centro) * (local_size_y + 2 * centro) * 3  # 3 canales RGB
+
+    local_mem = cl.LocalMemory(local_mem_size)
+
+    # Argumentos del kernel
+    args_kernel = [buffer_in, buffer_out, filtro_buf, np.int32(filtro.shape[0]), np.int32(imagen_np.shape[1]), np.int32(imagen_np.shape[0]),local_mem]
+    
+    establecer_args_kernel(kernel, args_kernel)
+
+    # Contar tiempo total
+    start_time = time.time()
+
+    # Ejecutar el kernel 100 veces
+    for _ in range(1000):
+        cl.enqueue_nd_range_kernel(command_queue, kernel, global_size, local_size)
+
+    # Esperar a que todas las operaciones terminen
+    command_queue.finish()
+
+    # Medir tiempo final
+    end_time = time.time()
+
+    # Calcular tiempo total y promedio
+    total_time = end_time - start_time
+    avg_time = total_time / 1000
+
+    # Leer el buffer de salida
+    imagen_out_np = np.empty_like(imagen_np)
+    cl.enqueue_copy(command_queue, imagen_out_np, buffer_out)
+
+    # Crear la imagen resultante
+    imagen_resultante = Image.fromarray(imagen_out_np)
+
+    return imagen_resultante, avg_time
+
+
 '''
 APLICA FILTRO COLOR DE CUALQUIER TAMAÑO EL FILTRO, NO NECESARIAMENTE CUADRADO
 '''

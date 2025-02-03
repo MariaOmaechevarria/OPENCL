@@ -205,7 +205,6 @@ def filtros_divididos_o_no(path, device_type, image_path):
 
     # Definir los kernels a usar en el experimento
     kernels_codes = [
-        kernel.kernel_filter_color,
         kernel.kernel_filter_color_local_organizado,  # Kernel con acceso organizado a memoria local
         kernel.kernel_filter_color_rectangular,       # Kernel que aplica un filtro rectangular
         kernel.kernel_filter_color_local_rectangular  # Kernel que aplica un filtro rectangular con memoria local
@@ -213,7 +212,6 @@ def filtros_divididos_o_no(path, device_type, image_path):
 
     # Nombres identificativos de los kernels
     kernels_names = [
-        "kernel_filter_color",
         "kernel_filter_color_local_organizado",
         "kernel_filter_color_rectangular",
         "kernel_filter_color_local_rectangular"
@@ -221,8 +219,7 @@ def filtros_divididos_o_no(path, device_type, image_path):
 
     # Funciones que aplican los filtros correspondientes a cada kernel
     funciones = [
-        ff.aplicar_filtro,
-        ff.aplicar_filtro_local,                     # Función que aplica filtro con memoria local
+        ff.aplicar_filtro_color_local_100,                     # Función que aplica filtro con memoria local
         ff.aplicar_filtro_color_dividido,            # Función que aplica filtro dividido (X, Y)
         ff.aplicar_filtro_local_dividido             # Función que aplica filtro dividido con memoria local
     ]
