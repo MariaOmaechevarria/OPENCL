@@ -82,6 +82,10 @@ def mining_GPU(
     target_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=target)
     nonce_buffer = cl.Buffer(context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=nonce)
     debug_hash_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, debug_hash.nbytes)
+    # Crear el buffer de `found_nonce`, inicialmente en False
+    found_nonce = np.zeros(1, dtype=bool)  # Usamos numpy para crear el buffer
+    found_nonce_buffer = cl.Buffer(context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=found_nonce)
+
 
     # Compilación del kernel
     program = cl.Program(context, kernel_code).build()  # Compilar el código OpenCL
@@ -91,6 +95,7 @@ def mining_GPU(
     kernel.set_arg(1, target_buffer)
     kernel.set_arg(2, nonce_buffer)
     kernel.set_arg(3, debug_hash_buffer)
+    kernel.set_arg(4, found_nonce_buffer)
 
     
     # Ejecutar kernel
@@ -100,15 +105,18 @@ def mining_GPU(
     # Leer los resultados desde la GPU
     cl.enqueue_copy(command_queue, nonce, nonce_buffer)
     cl.enqueue_copy(command_queue, debug_hash, debug_hash_buffer)
+    cl.enqueue_copy(command_queue, found_nonce, found_nonce_buffer).wait()
 
     # Medir el tiempo de ejecución
     exec_time = 1e-9 * (event.profile.end - event.profile.start)
 
     # Validar el nonce encontrado
-    if nonce[0] != 0xFFFFFFFF:
+    if found_nonce[0]:
         is_valid, hash_value = validate_nonce(block, nonce[0], int.from_bytes(target.tobytes(), byteorder='big'))
         #is_valid=True
         if is_valid:
             return exec_time, nonce[0], hash_value  # Retornar si es válido
 
     return None, None, None
+
+#nonce[0] != 0xFFFFFFFF and 

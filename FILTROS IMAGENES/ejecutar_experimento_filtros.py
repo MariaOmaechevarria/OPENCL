@@ -386,8 +386,8 @@ if __name__ == "__main__":
     ]
 
     device_type= cl.device_type.GPU 
-    #obtener_local_size(path,device_type, lista_paths, compute_units, processing_elements)
-    #comparacion_kernels(path,device_type,lista_paths)
+    obtener_local_size(path,device_type, lista_paths, compute_units, processing_elements)
+    comparacion_kernels(path,device_type,lista_paths)
     filtros_divididos_o_no(path,device_type,image_path)
-    #mejor_local_size_1000(path,device_type,lista_paths,compute_units,processing_elements)
+    mejor_local_size_1000(path,device_type,lista_paths,compute_units,processing_elements)
 

@@ -1,3 +1,4 @@
+
 '''
 KERNEL MINERIA DE UN BLOQUE DEL BLOCKCHAIN
 '''
@@ -122,10 +123,11 @@ __kernel void kernel_mining(
     __global unsigned char *block,
     __global uint *target,
     __global uint *nonce,
-    __global uint *debug_hash
-) {
-    //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
-    if (*nonce != 0xFFFFFFFF) return;
+    __global uint *debug_hash,
+    __global bool *found_nonce) 
+    {
+    // Comprobar si alguna hebra ya encontró el nonce
+    if (*found_nonce) return; 
     
     //Cada hebra inicializa el nonce con su global_id()
     uint cur_nonce = get_global_id(0);
@@ -137,7 +139,7 @@ __kernel void kernel_mining(
     for (int i = 0; i < 80; i++) mensaje[i] = block[i];
 
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
-     if (*nonce != 0xFFFFFFFF) return;
+    if (*found_nonce) return; 
     
     //Añadir el nonce a la variable auxiliar que almcena el mensaje
     for (size_t i = 0; i < 4; i++) {
@@ -145,7 +147,7 @@ __kernel void kernel_mining(
     }
 
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
-    if (*nonce != 0xFFFFFFFF) return;
+    if (*found_nonce) return; 
 
     //Bariable auxiliar para almacenar el hash
     uint hash[8] = {0};
@@ -154,7 +156,7 @@ __kernel void kernel_mining(
     sha256(mensaje, 128, hash);
 
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
-     if (*nonce != 0xFFFFFFFF) return;
+    if (*found_nonce) return; 
     
      
     //Copiar el hash a la variable auxiliar para devolverlo
@@ -163,7 +165,7 @@ __kernel void kernel_mining(
     }
 
     //Instruccion para ver si alguna hebra ha conseguido ya el objetivo
-    if (*nonce != 0xFFFFFFFF) return;
+    if (*found_nonce) return; 
     
 
     //Comprobacion de si el hash obtenido es menor que el target
@@ -180,6 +182,7 @@ __kernel void kernel_mining(
         if (target[i] > big_hi) {
             //Si es menor exito lo hemos conseguido,actualizamos el nonce
             atomic_xchg(nonce, cur_nonce);
+            *found_nonce = true; 
             return;
         }
         //Si es mayor hemos perdido, esa hebra acaba
