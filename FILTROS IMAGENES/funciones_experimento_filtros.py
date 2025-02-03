@@ -771,6 +771,8 @@ def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_
     # Crear gráfico de líneas
     plt.figure(figsize=(10, 6))
     for column in df.columns:
+        if column=="kernel_filter_color":
+           label="Kernel Color"
         if column=='kernel_filter_color_local_organizado':
            label='Kernel Memoria Local'
            
