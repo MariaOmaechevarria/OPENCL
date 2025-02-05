@@ -3,7 +3,7 @@ ARCHIVO CON NUCLEOS DE CONVOLUCIONES (FILTROS) DE DISTINTOS TAMAÑOS
 '''
 
 
-#lIBRERIA 
+#LIBRERIA 
 import numpy as np
 
 
@@ -42,9 +42,9 @@ filtro_sobel_X=np.array([
 ], dtype=np.float32)
 
 filtro_sobel_Y=np.array([
-    [-1, 0, 1],
-    [-2, 0, 2],
-    [-1, 0, 1]
+    [1, 2, 1],
+    [0, 0, 0],
+    [-1, -2, -1]
 ], dtype=np.float32)
 
 filtrosobelX=np.array([[1,0,-1]], dtype=np.float32)
