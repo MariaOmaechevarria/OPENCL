@@ -119,4 +119,3 @@ def mining_GPU(
 
     return None, None, None
 
-#nonce[0] != 0xFFFFFFFF and 
