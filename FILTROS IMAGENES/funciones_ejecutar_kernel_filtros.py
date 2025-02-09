@@ -38,7 +38,7 @@ def pre_compilar_kernel(context: cl.Context, kernel_code: str, kernel_name: str)
     kernel = cl.Kernel(program, kernel_name)
     return kernel
 
-def preparacion_kernel(device_type: cl.device_type, kernel_code: str, kernel_name: str) -> tuple:
+def preparacion_kernel(device_type: cl.device_type, kernel_code: str, kernel_name: str) -> tuple[cl.Platform,cl.Device,cl.Context,cl.CommandQueue,cl.Program,cl.Kernel]:
     """
     Prepara el contexto, cola de comandos y compila el kernel.
 
@@ -79,7 +79,7 @@ def ejecutar_kernel(command_queue: cl.CommandQueue, kernel_filter: cl.Kernel, gl
     event.wait()
     return event
 
-def pre_filtros(image_path: str, kernel_code: str, kernel_name: str, device_type: cl.device_type, local_size: tuple[int, int]) -> tuple:
+def pre_filtros(image_path: str, kernel_code: str, kernel_name: str, device_type: cl.device_type, local_size: tuple[int, int]) -> tuple[cl.Context,cl.Kernel,cl.Buffer,cl.Buffer,int,int,np.ndarray,np.ndarray,cl.CommandQueue]:
     """
     Prepara la configuración necesaria para aplicar un filtro, incluyendo contexto, buffers y kernel.
 

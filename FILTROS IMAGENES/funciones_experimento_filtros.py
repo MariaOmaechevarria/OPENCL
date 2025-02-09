@@ -81,7 +81,7 @@ FUNCIONES PARA GUARDAR DATA FRAMES EN FORMATO EXCEL
 
 # GUARDA DOS DATA FRAMES EN UN ARCHIVO
 
-def guardar_dataframes_excel(resultados, best_results_df, base_save_dir, filtro_nombre, funcion_nombre):
+def guardar_dataframes_excel(resultados, best_results_df, base_save_dir, filtro_nombre, funcion_nombre)-> None:
     """
     Guarda dos DataFrames en un archivo Excel con hojas separadas, formateando celdas numéricas y creando directorios si no existen.
     
@@ -127,7 +127,7 @@ def guardar_dataframes_excel(resultados, best_results_df, base_save_dir, filtro_
 
 #GUARDA UN DATA FRAME EN FORMATO EXCEL
     
-def guardar_dataframe_excel(resultados,base_save_dir):
+def guardar_dataframe_excel(resultados,base_save_dir)->None:
     """
     Guarda un DataFrame en un archivo Excel con formato numérico en celdas y crea directorios si no existen.
     
@@ -179,7 +179,7 @@ def obtener_tamano_imagen(path:str)-> int:
         return img.size[0] * img.size[1]  
 
 # Función para extraer las dimensiones de las imágenes
-def extraer_dimensiones(nombre_archivo:str):
+def extraer_dimensiones(nombre_archivo:str)->tuple:
     """
     Extrae las dimensiones de un archivo a partir de su nombre utilizando un patrón como '128x128' o '640x480'.
     Args:
@@ -355,7 +355,7 @@ def filtros_generales(lista_paths:list, filtro:list, aplicar_filtro_func, kernel
 
 #Aplica un filtro a una lista de imágenes utilizando tamaños locales óptimos.
 
-def filtros_optimos(lista_paths, filtro, aplicar_filtro_func, kernel_code, kernel_name, device_type, compute_unit, processing_elements):
+def filtros_optimos(lista_paths, filtro, aplicar_filtro_func, kernel_code, kernel_name, device_type, compute_unit, processing_elements)->pd.DataFrame:
     """
     Aplica un filtro a una lista de imágenes utilizando tamaños locales óptimos.
 
@@ -420,7 +420,7 @@ def filtros_optimos(lista_paths, filtro, aplicar_filtro_func, kernel_code, kerne
     return results_optimal
 
 #FUNCION QUE GRAFICA UN DATA FRAME DONDE EL EJE X SON LAS IAMGENES, EL EJE Y LOS TIEMPOS DE EJECUCION Y CADA LOCAL SIZE ES UNA LINEA DEL GRAFICO
-def graficar_tiempos_ejecucion(data:pd.DataFrame, columns_to_plot=None, save_path=None):
+def graficar_tiempos_ejecucion(data:pd.DataFrame, columns_to_plot=None, save_path=None)->None:
     """
     Genera un gráfico de tiempos de ejecución por tamaño de trabajo (local size).
 
@@ -476,7 +476,7 @@ def graficar_tiempos_ejecucion(data:pd.DataFrame, columns_to_plot=None, save_pat
 #Realiza un experimento de filtros en un conjunto de imágenes, aplicando filtros con diferentes tamaños de trabajo (local sizes).
 # Genera gráficos con los resultados y devuelve los mejores resultados.
 
-def experimento_filtros(lista_paths:list[str], filtro:list[float], aplicar_filtro_func, kernel_code:str, kernel_name:str, device_type:str, compute_units:int, processing_elements:int, filtro_nombre:str, funcion_nombre:str, base_save_dir='graficos'):
+def experimento_filtros(lista_paths:list[str], filtro:list[float], aplicar_filtro_func, kernel_code:str, kernel_name:str, device_type:str, compute_units:int, processing_elements:int, filtro_nombre:str, funcion_nombre:str, base_save_dir='graficos')->tuple[pd.DataFrame,pd.DataFrame]:
     """
     Realiza un experimento de filtros en un conjunto de imágenes, aplicando filtros con diferentes tamaños de trabajo (local sizes).
     Genera gráficos con los resultados y devuelve los mejores resultados.
@@ -603,7 +603,7 @@ FUNCIONES PARA COMPARAR KERNELS Y DETERMINAR EL MEJOR
 
 
 # Función para graficar los tiempos de ejecución de diferentes kernels para diferentes imágenes.
-def graficar_tiempos_ejecucion_kernels(df,save_path=None):
+def graficar_tiempos_ejecucion_kernels(df,save_path=None)->None:
     """
     Función para graficar los tiempos de ejecución de diferentes kernels para diferentes imágenes.
     
@@ -702,7 +702,7 @@ def experimento_kernels(lista_paths:list[str], lista_filtro:list[list], lista_ke
 
 #Función para comparar el rendimiento de diferentes filtros aplicados con distintos kernels.
 
-def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_size, device_type, filtros1, filtros2,save_path):
+def comparar_filtros(kernels_codes, kernels_names, funciones, image_path, local_size, device_type, filtros1, filtros2,save_path)->pd.DataFrame:
     """
     Función para comparar el rendimiento de diferentes filtros aplicados con distintos kernels.
 
