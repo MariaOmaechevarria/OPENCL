@@ -12,7 +12,7 @@ import pyopencl as cl
 FUNCIONES COMUNES PARA MANIPULACIÓN DE MATRICES Y KERNELS EN OPENCL
 '''
 
-def preparacion_kernel(device_type:str, kernel_code:str, kernel_name:str):
+def preparacion_kernel(device_type:str, kernel_code:str, kernel_name:str)-> tuple[cl.Platform,cl.Device,cl.Context,cl.CommandQueue,cl.Program,cl.Kernel]:
     """
     Configura el entorno OpenCL y compila un kernel.
 

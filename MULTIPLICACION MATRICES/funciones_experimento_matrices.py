@@ -78,7 +78,7 @@ def optimal_local_size(
 FUNCIÓN PARA GUARDAR DATA FRAMES EN FORMATO EXCEL
 '''
 
-def guardar_dataframes_excel(resultados: pd.DataFrame, best_results_df: pd.DataFrame, base_save_dir: str, funcion_nombre: str):
+def guardar_dataframes_excel(resultados: pd.DataFrame, best_results_df: pd.DataFrame, base_save_dir: str, funcion_nombre: str)->None:
     """
     Guarda dos DataFrames en un archivo Excel con hojas separadas y formato específico.
 
@@ -195,7 +195,7 @@ def aplicar_kernel_local_sizes(kernel_code: str, kernel_name: str, device_type: 
 
 #GRAFICA LOS TIEMPOS DE EJECUCIÓN DESDE UN DATAFRAME
 
-def graficar_tiempos_ejecucion(data: pd.DataFrame, columns_to_plot, rows_to_plot: list[int]=None, save_path: str = None):
+def graficar_tiempos_ejecucion(data: pd.DataFrame, columns_to_plot, rows_to_plot: list[int]=None, save_path: str = None)->None:
     """
     Genera un gráfico de los tiempos de ejecución desde un DataFrame.
 
@@ -323,7 +323,7 @@ def experimento_matrices(funcion_aplicar, kernel_code: str, kernel_name: str, de
 # FUNCIÓN PARA APLICAR UN EXPERIMENTO A MULTIPLES KERNELS Y FUNCIONES
 def ejecutar_experimentos(aplicar_funcs: list, kernel_codes: list[str], kernel_names: list[str], 
                           device_type: cl.device_type, compute_units: int, processing_elements: int, 
-                          base_save_dir: str):
+                          base_save_dir: str)->None:
     """
     Ejecuta experimentos para múltiples kernels y funciones, generando resultados y gráficos.
 
@@ -378,7 +378,7 @@ def experimento_kernels(lista_kernels: list[str], lista_nombres_kernels: list[st
 
 
 # FUNCIÓN PARA GRAFICAR LOS TIEMPOS DE EJECUCIÓN DE DIFERENTES KERNELS
-def graficar_tiempos_ejecucion_kernels(df: pd.DataFrame, save_path: str = None):
+def graficar_tiempos_ejecucion_kernels(df: pd.DataFrame, save_path: str = None)->None:
     """
     Genera un gráfico comparativo de tiempos de ejecución para diferentes kernels.
 
