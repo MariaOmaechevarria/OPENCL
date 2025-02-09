@@ -23,7 +23,7 @@ EXPERIMENTO 1- Mejor local size: Para distintos filtros, obtener los tiempos de 
  además de 3 gráficos.
 '''
 
-def obtener_local_size(path:str,device_type:str, lista_paths:list, compute_units: int, processing_elements: int):
+def obtener_local_size(path:str,device_type:str, lista_paths:list, compute_units: int, processing_elements: int)-> None:
     """
     Obtiene el tamaño local adecuado para los kernels en función del dispositivo y las configuraciones proporcionadas.
 
@@ -90,7 +90,7 @@ EXPERIMENTO 2: Comparar kernels: Compara los kernels de memoria local para deter
 un gráfico y una tabla.
 '''
 
-def comparacion_kernels(path:str, device_type:str, lista_paths:list):
+def comparacion_kernels(path:str, device_type:str, lista_paths:list)-> None:
     """
     Realiza la comparación de varios kernels en la aplicación de filtros a imágenes utilizando OpenCL.
     
@@ -172,7 +172,7 @@ y con memoria local o no. Para determinar cual es el más óptimo. Guarda en la 
 un gráfico y una tabla.
 '''
 
-def filtros_divididos_o_no(path, device_type, image_path):
+def filtros_divididos_o_no(path, device_type, image_path)-> None:
     """
     Realiza un experimento para comparar el rendimiento de diferentes kernels que aplican filtros de manera 
     tradicional y de manera dividida, con y sin el uso de memoria local. El experimento evalúa el impacto del 
@@ -270,7 +270,7 @@ Se ejecuta el kernel 1000 veces y se calcula dividiendo el tiempo total entre 10
 Para cada filtro estudiado se obtienen dos tablas, resultados generales y los mejores, aparte de varios gráficos.Se guardan
 en la carpeta de resultados en 1000 veces.
 '''
-def mejor_local_size_1000(path:str, device_type:str, lista_paths:list, compute_units:int, processing_elements:int):
+def mejor_local_size_1000(path:str, device_type:str, lista_paths:list, compute_units:int, processing_elements:int)-> None:
     """
     Ejecuta experimentos para evaluar el rendimiento de los filtros `Mean` y `Gaussian` 
     aplicados a un conjunto de imágenes utilizando OpenCL. Los filtros se aplican con el 
