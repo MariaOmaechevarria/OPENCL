@@ -98,7 +98,7 @@ def graficar_comparacion(dimensions:list[int], tiempos_dict:dict, title:str, sav
         plt.show()
     plt.close()
 
-def guardar_excel(dataframe:pd.DataFrame, save_path:str, filename:str):
+def guardar_excel(dataframe:pd.DataFrame, save_path:str, filename:str)->None:
     """
     Guarda un DataFrame como archivo Excel.
 
@@ -112,7 +112,7 @@ def guardar_excel(dataframe:pd.DataFrame, save_path:str, filename:str):
     dataframe.to_excel(file_path, index=False)
     print(f"Archivo Excel guardado en {file_path}")
 
-# Ejemplo de uso
+
 if __name__ == "__main__":
     cpu_path = "C:/Users/Eevee/OPENCL/RESULTADOS_GOOGLE_COLLAB/Mult_Mat_Basica_CPU.csv"
     gpu_paths = {
