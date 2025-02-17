@@ -23,7 +23,7 @@ import funciones_ejecutar_kernel_matrices as fm
 import kernels_matrices as km
 
 # Path para guardar los archivos (ADAPTAR SEGUN EL ORDENADOR)
-path="C:/Users/Eevee"
+path = os.getcwd()
 
 # Datos GPU (ADAPTAR SEGUN LA GPU)
 compute_units = 82  
@@ -41,7 +41,7 @@ aplicar_funcs=[fm.mult_mat_basica,fm.mult_mat_local,fm.mult_mat_local_tiles]
 EXPERIMENTO LOCAL SIZE OPTIMO
 '''
 #Crear path para almacenar resultados experimento determinar local size optimo
-base_save_dir = os.path.join(path, "OPENCL/MULTIPLICACION MATRICES/RESULTADOS/")
+base_save_dir = os.path.join(path, "MULTIPLICACION MATRICES/RESULTADOS/")
 os.makedirs(base_save_dir, exist_ok=True)
 
 # Ejecutar los experimentos de estudiar local size optimo
@@ -52,7 +52,7 @@ EXPERIMENTO KERNEL OPTIMO
 '''
 
 # Directorio base para guardar los resultados de determinar el kernel optimo
-base_save_dir = os.path.join(path, "OPENCL/MULTIPLICACION MATRICES/RESULTADOS/Comparacion kernels")
+base_save_dir = os.path.join(path, "MULTIPLICACION MATRICES/RESULTADOS/Comparacion kernels")
 os.makedirs(base_save_dir, exist_ok=True)
 
 #Local size para el experimento

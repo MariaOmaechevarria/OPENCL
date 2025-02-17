@@ -68,7 +68,7 @@ def obtener_local_size(path:str,device_type:str, lista_paths:list, compute_units
         ]
 
     # Directorio base para guardar los gráficos
-    base_save_dir = os.path.join(path, "OPENCL/FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/")
+    base_save_dir = os.path.join(path, "FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/")
 
         # Ejecutar los experimentos
     ex.ejecutar_experimentos(
@@ -145,7 +145,7 @@ def comparacion_kernels(path:str, device_type:str, lista_paths:list)-> None:
     local_size = (8, 8)  
     
     # Directorio base donde se guardarán los resultados y gráficos
-    base_save_dir = os.path.join(path, "OPENCL/FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/COMPARACION_KERNELS/MEM_LOCAL/")
+    base_save_dir = os.path.join(path, "FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/COMPARACION_KERNELS/MEM_LOCAL/")
 
     # Nombres de las imágenes, extraídos de las rutas de las imágenes
     image_names = [path.split('/')[-1] for path in lista_paths]
@@ -249,7 +249,7 @@ def filtros_divididos_o_no(path, device_type, image_path)-> None:
     ]
 
     # Llamar a la función que realiza la comparación de los filtros
-    save_path = os.path.join(path, "OPENCL/FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/COMPARACION_KERNELS/COMPARACION FILTROS/")
+    save_path = os.path.join(path, "FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/COMPARACION_KERNELS/COMPARACION FILTROS/")
     df_resultados = ex.comparar_filtros(
         kernels_codes,   # Lista de kernels a usar
         kernels_names,   # Nombres de los kernels
@@ -328,7 +328,7 @@ def mejor_local_size_1000(path:str, device_type:str, lista_paths:list, compute_u
         ]
 
 
-    base_save_dir = os.path.join(path, "OPENCL/FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/1000VECES/")
+    base_save_dir = os.path.join(path, "FILTROS IMAGENES/EXPERIMENTOS/RESULTADOS/1000VECES/")
     os.makedirs(base_save_dir, exist_ok=True)
     nombres=['mean','gaussian']
 
@@ -355,7 +355,7 @@ if __name__ == "__main__":
     #path="C:/Users/Eevee"
     path = os.getcwd()
 
-    image_path = os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen800x600.jpg")
+    image_path = os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen800x600.jpg")
 
     # Datos GPU (ADAPTAR SEGÚN EL DISPOSITIVO)
     compute_units = 82  
@@ -366,14 +366,14 @@ if __name__ == "__main__":
 
     #Lista de las imagenes:
     lista_paths = [
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen64x64.jpg"),
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen128x128.jpg"),
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen640x480.jpg"),
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen800x600.jpg"),
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen720x1280.jpg"),
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen1920x1080.jpg"),
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen2160x3840.jpg"),
-        os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen8000x6000.jpg")]
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen64x64.jpg"),
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen128x128.jpg"),
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen640x480.jpg"),
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen800x600.jpg"),
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen720x1280.jpg"),
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen1920x1080.jpg"),
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen2160x3840.jpg"),
+        os.path.join(path, "FILTROS IMAGENES/IMAGENES/imagen8000x6000.jpg")]
 
     image_names = [
         "imagen64x64.jpg",
@@ -391,4 +391,6 @@ if __name__ == "__main__":
     comparacion_kernels(path,device_type,lista_paths)
     filtros_divididos_o_no(path,device_type,image_path)
     mejor_local_size_1000(path,device_type,lista_paths,compute_units,processing_elements)
+
+
 

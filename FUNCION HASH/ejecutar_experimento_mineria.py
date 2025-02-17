@@ -9,10 +9,11 @@ ARCHIVO QUE EJECUTA LOS EXPERIMENTOS DE MINERÍA:
 
 import numpy as np
 import funciones_experimento_mining as ex
+import os
 
 #RUTA PARA GUARDAR ARCHIVOS (MODIFICAR)
 
-path="C:/Users/Eevee/OPENCL"
+path = os.getcwd()
 
 # TARGET SENCILLO:
 # Este objetivo (target) tiene una dificultad baja, lo que significa que es más probable encontrar un hash válido.
