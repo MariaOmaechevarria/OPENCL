@@ -352,7 +352,8 @@ def mejor_local_size_1000(path:str, device_type:str, lista_paths:list, compute_u
 
 if __name__ == "__main__":
     #Ruta del archivo (MODIFICAR SI ES NECESARIO)
-    path="C:/Users/Eevee"
+    #path="C:/Users/Eevee"
+    path = os.getcwd()
 
     image_path = os.path.join(path, "OPENCL/FILTROS IMAGENES/IMAGENES/imagen800x600.jpg")
 
